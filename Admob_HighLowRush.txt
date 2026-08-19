@@ -1,0 +1,10 @@
+HighLowRush
+
+『iOS』
+
+■highlowrush_ios_home_banner
+
+アプリid
+ca-app-pub-8174756915786797~3111467770
+AdMob 広告ユニット ID
+ca-app-pub-8174756915786797/4454826263

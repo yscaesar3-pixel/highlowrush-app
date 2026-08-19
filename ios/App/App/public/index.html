@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>ハイローラッシュ | HighLowRush</title>
+<style>
+/* =========================================================
+   HighLowRush prototype
+   - Placeholder-level visuals per spec section 35 (PROTOTYPE_AND_ASSET_WORKFLOW)
+   - Final art assets (icon / logo / share image / backgrounds) to be swapped in later
+   ========================================================= */
+:root{
+  --ivory:#FBF7EF;
+  --ivory-deep:#F3ECDE;
+  --theme:#7C4DFF;
+  --theme-deep:#5B32D6;
+  --down:#2F80ED;
+  --down-deep:#1C64C9;
+  --up1:#FF6B9D;
+  --up2:#FF9A56;
+  --red-soft:#D9555C;
+  --gray-suit:#4B4B52;
+  --ink:#2C2A33;
+  --ink-sub:#8B8792;
+  --card-face:#FFFDF8;
+  --card-border:#D8D2C4;
+  --green-ok:#3FBF6B;
+  --gray-draw:#9B97A0;
+  --gold:#E3B23C;
+  --danger:#D9555C;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none;}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;background:var(--ivory);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN",sans-serif;
+  color:var(--ink); position:fixed; inset:0; overscroll-behavior:none;}
+#app{position:fixed; inset:0; overflow:hidden;}
+.screen{position:absolute; inset:0; display:none; flex-direction:column; background:var(--ivory);
+  animation:fadeIn .18s ease; }
+.screen.active{display:flex;}
+@keyframes fadeIn{from{opacity:0} to{opacity:1}}
+
+/* ---------- Launch ---------- */
+#screen-launch{background:var(--ivory); align-items:center; justify-content:center;}
+.launch-title{font-size:34px; font-weight:800; color:var(--theme-deep); letter-spacing:.02em;}
+.launch-sub{margin-top:6px; font-size:14px; color:var(--ink-sub); letter-spacing:.06em;}
+
+/* ---------- Common top bars ---------- */
+.topbar{display:flex; align-items:center; padding:calc(var(--safe-top) + 10px) 12px 8px 12px; gap:6px; flex-shrink:0;}
+.topbar .spacer{flex:1;}
+.nav-btn{display:flex; align-items:center; gap:4px; background:none; border:none; font-size:15px; font-weight:700;
+  color:var(--theme-deep); padding:8px 10px; border-radius:12px;}
+.nav-btn:active{background:rgba(124,77,255,.12);}
+.nav-btn.icon-only{font-size:20px; padding:8px;}
+.gear-fab{position:absolute; top:calc(var(--safe-top) + 12px); right:14px; background:rgba(0,0,0,.05);
+  border:none; border-radius:50%; width:42px; height:42px; font-size:20px; z-index:5;}
+
+/* ---------- Home ---------- */
+#screen-home{align-items:stretch; justify-content:center; position:relative;}
+.home-bg-pattern{position:absolute; inset:0; pointer-events:none; opacity:.5;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(124,77,255,.06) 0 40px, transparent 41px),
+    radial-gradient(circle at 85% 12%, rgba(255,107,157,.06) 0 34px, transparent 35px),
+    radial-gradient(circle at 20% 82%, rgba(47,128,237,.06) 0 46px, transparent 47px),
+    radial-gradient(circle at 90% 78%, rgba(227,178,60,.05) 0 30px, transparent 31px);
+}
+.home-content{position:relative; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:0 24px;}
+.home-title-main{font-size:32px; font-weight:800; color:var(--theme-deep);}
+.home-title-sub{font-size:13px; color:var(--ink-sub); letter-spacing:.08em; margin-bottom:8px;}
+.home-catch{font-size:15px; color:var(--ink); margin-bottom:26px; text-align:center;}
+.home-buttons{display:flex; flex-direction:column; gap:14px; width:100%; max-width:340px;}
+.home-btn{font-size:19px; font-weight:800; padding:20px 14px; border-radius:20px; border:none;
+  color:#fff; display:flex; align-items:center; justify-content:center; gap:10px;
+  box-shadow:0 6px 0 rgba(0,0,0,.08); transition:transform .08s;}
+.home-btn:active{transform:translateY(3px) scale(.99); box-shadow:0 3px 0 rgba(0,0,0,.08);}
+#btn-single{background:linear-gradient(135deg,var(--theme),var(--theme-deep));}
+#btn-multi{background:linear-gradient(135deg,var(--up1),var(--up2));}
+.single-best-summary{display:flex; align-items:center; justify-content:center; gap:6px; font-size:13px;
+  color:var(--ink-sub); margin-top:-4px;}
+.single-best-summary b{color:var(--theme-deep); font-weight:800;}
+
+/* ---------- Ad banner (reserved space placeholder) ---------- */
+.ad-banner{flex-shrink:0; width:100%; height:50px; background:#EDEAE2; border-top:1px solid #DFD9CB;
+  display:flex; align-items:center; justify-content:center; font-size:11px; color:#B4AEA0;
+  padding-bottom:0; margin-bottom:var(--safe-bottom);}
+.ad-banner.hidden{display:none;}
+
+/* ---------- Buttons generic ---------- */
+.big-btn{font-size:17px; font-weight:800; padding:16px; border-radius:18px; border:none; color:#fff;
+  box-shadow:0 5px 0 rgba(0,0,0,.08);}
+.big-btn:active{transform:translateY(2px); box-shadow:0 3px 0 rgba(0,0,0,.08);}
+.small-btn{font-size:13px; font-weight:700; padding:10px 8px; border-radius:14px; border:none;
+  display:flex; flex-direction:column; align-items:center; gap:2px; background:#fff; color:var(--ink);
+  border:1px solid #E5E0D3;}
+.small-btn:active{background:#F0ECE0;}
+
+/* ---------- Single Game ---------- */
+#screen-singlegame{position:relative;}
+.sg-header{padding:calc(var(--safe-top) + 8px) 16px 2px; text-align:center; flex-shrink:0; position:relative;}
+.sg-home-btn{position:absolute; left:10px; top:calc(var(--safe-top) + 6px);}
+.sg-streak{font-size:34px; font-weight:800; color:var(--theme-deep); line-height:1.1;}
+.sg-streak.pop{animation:streakPop .28s ease;}
+@keyframes streakPop{0%{transform:scale(1)}40%{transform:scale(1.22)}100%{transform:scale(1)}}
+.sg-best{font-size:13px; color:var(--ink-sub); font-weight:600; margin-top:2px;}
+.sg-cycle{font-size:11px; color:var(--ink-sub); margin-top:1px; min-height:14px;}
+.sg-main{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:6px; padding:4px 12px 0; min-height:0;}
+.card-stage{position:relative; flex:1; width:100%; display:flex; align-items:center; justify-content:center; min-height:0;}
+.card-el{width:104px; height:150px; position:relative; perspective:800px;}
+.card-el.big{width:118px; height:170px;}
+.card-inner{position:relative; width:100%; height:100%; transition:transform .28s cubic-bezier(.2,.7,.3,1); transform-style:preserve-3d;}
+.card-inner.flipped{transform:rotateY(180deg);}
+.card-face,.card-back-face{position:absolute; inset:0; backface-visibility:hidden; border-radius:12px;
+  background:var(--card-face); border:1.5px solid var(--card-border);
+  box-shadow:2px 4px 6px rgba(0,0,0,.08);}
+.card-back-face{background:linear-gradient(135deg,var(--theme-deep),var(--theme)); border:1.5px solid rgba(255,255,255,.5);
+  transform:rotateY(180deg); overflow:hidden;}
+.card-back-face::before{content:""; position:absolute; inset:4px; border:1.5px solid rgba(255,255,255,.35); border-radius:9px;}
+.card-back-pattern{position:absolute; inset:0; opacity:.35;
+  background-image:repeating-linear-gradient(45deg, rgba(255,255,255,.5) 0 1.5px, transparent 1.5px 16px),
+                    repeating-linear-gradient(-45deg, rgba(255,255,255,.5) 0 1.5px, transparent 1.5px 16px);}
+.card-back-logo{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:30px; font-weight:800; color:rgba(255,255,255,.92);}
+.card-corner{position:absolute; font-size:12px; font-weight:800; line-height:1; text-align:center;}
+.card-corner.tl{top:6px; left:6px;}
+.card-corner.br{bottom:6px; right:6px; transform:rotate(180deg);}
+.card-center{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;}
+.card-rank{font-size:34px; font-weight:800; line-height:1;}
+.card-el.big .card-rank{font-size:40px;}
+.card-suit-main{font-size:22px; line-height:1;}
+.card-el.big .card-suit-main{font-size:26px;}
+.suit-red{color:var(--red-soft);}
+.suit-gray{color:var(--gray-suit);}
+.card-el.joker .card-rank{font-size:16px; letter-spacing:.05em; color:var(--theme-deep);}
+
+.deck-stack{position:relative; width:88px; height:128px; margin-top:2px;}
+.deck-layer{position:absolute; inset:0; background:linear-gradient(135deg,var(--theme-deep),var(--theme));
+  border-radius:10px; border:1.5px solid rgba(255,255,255,.5); box-shadow:1px 2px 3px rgba(0,0,0,.12);}
+.deck-infinity{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:44px; font-weight:800; color:#fff; z-index:10; text-shadow:0 1px 3px rgba(0,0,0,.2);}
+.deck-remain-text{text-align:center; font-size:13px; color:var(--ink-sub); font-weight:700; margin-top:6px;}
+.deck-empty-panel{display:flex; flex-direction:column; align-items:center; gap:10px; margin-top:4px;}
+.deck-empty-msg{font-size:14px; font-weight:700; color:var(--ink-sub); text-align:center;}
+.deck-empty-btn{padding:12px 22px; border-radius:16px; border:none; font-size:15px; font-weight:800; color:#fff;
+  background:linear-gradient(135deg,var(--theme),var(--theme-deep)); box-shadow:0 4px 0 rgba(0,0,0,.08);}
+.deck-empty-btn:active{transform:translateY(2px); box-shadow:0 2px 0 rgba(0,0,0,.08);}
+
+.feedback-overlay{position:absolute; top:6px; left:0; right:0; text-align:center; pointer-events:none;
+  font-size:26px; font-weight:800; opacity:0; transition:opacity .12s; z-index:5;
+  text-shadow:0 2px 6px rgba(255,253,248,.9), 0 0 14px rgba(255,253,248,.9);}
+.feedback-overlay.show{opacity:1;}
+.feedback-overlay.correct{color:var(--green-ok);}
+.feedback-overlay.draw{color:var(--gray-draw);}
+.feedback-overlay.wrong{color:var(--red-soft);}
+
+.sg-controls{flex-shrink:0; padding:8px 14px calc(10px + var(--safe-bottom)); display:flex; flex-direction:column; gap:6px;}
+.prob-row{display:flex; align-items:center; justify-content:center; gap:16px; font-size:12px; font-weight:700; color:var(--ink-sub); min-height:16px;}
+.prob-row.hidden{visibility:hidden; height:0; min-height:0; overflow:hidden;}
+.arrow-row{display:flex; gap:10px;}
+.arrow-btn{flex:1; padding:16px 6px 12px; border-radius:20px; border:none; color:#fff; font-weight:800;
+  display:flex; flex-direction:column; align-items:center; gap:2px; position:relative;}
+.arrow-btn .arrow-glyph{font-size:30px; line-height:1;}
+.arrow-btn .arrow-pct{font-size:13px; opacity:.9; font-weight:700;}
+.arrow-btn.down{background:linear-gradient(135deg,var(--down),var(--down-deep));}
+.arrow-btn.up{background:linear-gradient(135deg,var(--up1),var(--up2));}
+.arrow-btn:active, .arrow-btn.pressed{filter:brightness(.9); transform:scale(.97);}
+.arrow-btn:disabled{opacity:.55;}
+.history-open-btn{align-self:center; font-size:13px; font-weight:700; color:var(--theme-deep); background:none; border:none; padding:6px 10px;}
+
+/* ---------- Shuffle overlay (single & multi) ---------- */
+.shuffle-overlay{position:absolute; inset:0; background:rgba(251,247,239,.96); display:none; align-items:center; justify-content:center; z-index:20;}
+.shuffle-overlay.show{display:flex;}
+.shuffle-msg{font-size:20px; font-weight:800; color:var(--theme-deep); text-align:center; animation:shufflePulse .5s ease infinite alternate;}
+@keyframes shufflePulse{from{transform:scale(1)} to{transform:scale(1.05)}}
+.shuffle-cycle-msg{font-size:24px; font-weight:800; color:var(--gold); text-align:center;}
+
+/* ---------- History screen ---------- */
+.history-header{padding:calc(var(--safe-top)+8px) 16px 6px; display:flex; align-items:center; flex-shrink:0;}
+.history-title{flex:1; text-align:center; font-size:17px; font-weight:800; margin-right:40px;}
+.history-remain{text-align:center; font-size:12px; color:var(--ink-sub); font-weight:700; padding-bottom:4px;}
+.history-grid-wrap{flex:1; overflow:auto; padding:4px 10px 10px;}
+.hist-table{width:100%; border-collapse:collapse; table-layout:fixed;}
+.hist-table th{font-size:14px; padding:4px 0; color:var(--ink-sub);}
+.hist-table td{text-align:center; padding:2px;}
+.hist-cell{width:100%; aspect-ratio:1/1; border-radius:8px; background:var(--card-face); border:1.2px solid var(--card-border);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:12px; font-weight:800; position:relative;}
+.hist-cell .r{font-size:12px;}
+.hist-cell .s{font-size:11px;}
+.hist-cell.drawn{opacity:.32;}
+.hist-cell.current{border-width:2.5px; border-color:var(--theme-deep); opacity:1;}
+.hist-cell .cnt{position:absolute; bottom:1px; right:2px; font-size:8px; color:var(--ink-sub); font-weight:700;}
+.joker-box{margin:8px 10px 12px; padding:10px; background:#fff; border:1px solid #E5E0D3; border-radius:14px;
+  text-align:center; font-size:14px; font-weight:800; color:var(--theme-deep);}
+
+/* ---------- Result ---------- */
+#screen-singleresult{align-items:center; justify-content:center; position:relative;}
+.result-record{font-size:15px; font-weight:800; color:var(--gold); margin-bottom:6px; display:none;}
+.result-record.show{display:block;}
+.result-streak{font-size:42px; font-weight:800; color:var(--theme-deep);}
+.result-best{font-size:15px; color:var(--ink-sub); font-weight:700; margin-top:6px; margin-bottom:26px;}
+.result-actions{display:flex; flex-direction:column; align-items:center; gap:14px; width:100%; padding:0 24px;}
+#btn-retry{width:100%; max-width:320px; background:linear-gradient(135deg,var(--theme),var(--theme-deep));}
+.result-small-row{display:flex; gap:10px; width:100%; max-width:320px;}
+.result-small-row .small-btn{flex:1;}
+
+/* ---------- Tutorial / HowTo ---------- */
+.tut-wrap{flex:1; overflow:auto; padding:20px 22px calc(20px + var(--safe-bottom));}
+.tut-title{font-size:20px; font-weight:800; text-align:center; margin-bottom:16px;}
+.tut-line{font-size:15px; line-height:1.7; margin-bottom:12px; background:#fff; border:1px solid #E5E0D3; border-radius:14px; padding:12px 14px;}
+.tut-rank{font-size:14px; text-align:center; letter-spacing:.05em; color:var(--ink-sub); margin-bottom:12px;}
+.tut-cta{padding:14px 22px calc(14px + var(--safe-bottom));}
+#btn-tut-start{width:100%; background:linear-gradient(135deg,var(--theme),var(--theme-deep));}
+.tabs{display:flex; margin:0 16px 6px; background:#F0ECE0; border-radius:14px; padding:4px; flex-shrink:0;}
+.tab-btn{flex:1; padding:9px 6px; text-align:center; font-size:14px; font-weight:800; border-radius:10px; color:var(--ink-sub);}
+.tab-btn.active{background:#fff; color:var(--theme-deep); box-shadow:0 1px 3px rgba(0,0,0,.08);}
+
+/* ---------- Multiplayer preset ---------- */
+.preset-wrap{flex:1; overflow:auto; padding:8px 16px calc(10px + var(--safe-bottom));}
+.preset-title{text-align:center; font-size:18px; font-weight:800; margin:6px 0 16px;}
+.setting-card{background:#fff; border:1px solid #E5E0D3; border-radius:16px; padding:14px 16px; margin-bottom:12px;}
+.setting-row{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:6px 0;}
+.setting-row + .setting-row{margin-top:2px;}
+.setting-labels{flex:1;}
+.setting-name{font-size:15px; font-weight:700;}
+.setting-desc{font-size:12px; color:var(--ink-sub); margin-top:2px;}
+.toggle2{display:flex; border-radius:12px; overflow:hidden; border:1px solid #E5E0D3; flex-shrink:0;}
+.toggle2 button{padding:8px 14px; font-size:13px; font-weight:800; background:#fff; color:var(--ink-sub); min-width:52px;}
+.toggle2 button.on{background:var(--theme); color:#fff;}
+#btn-preset-start{width:100%; margin-top:6px; background:linear-gradient(135deg,var(--up1),var(--up2));}
+
+/* ---------- Multiplayer game ---------- */
+.mp-topnav{display:flex; align-items:center; gap:2px; padding:calc(var(--safe-top)+8px) 8px 4px; flex-shrink:0; flex-wrap:nowrap;}
+.mp-topnav .nav-btn{font-size:13px; padding:7px 8px;}
+.mp-main{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:4px 12px;}
+.mp-deck-card-stack{position:relative; width:184px; height:246px; margin:0 auto;}
+.mp-deck-card-stack #mp-deck{position:absolute; left:20px; top:20px; width:158px; height:224px;}
+.mp-deck-card-stack #mp-card{position:absolute; left:0; top:0; width:158px; height:224px; z-index:20;}
+.mp-deck-card-stack #mp-card .card-rank{font-size:46px;}
+.mp-deck-card-stack #mp-card .card-suit-main{font-size:30px;}
+.mp-remain-small{text-align:center; font-size:12px; color:var(--ink-sub); font-weight:700; margin-top:0;}
+.mp-inf{font-size:44px; font-weight:800; color:var(--theme-deep);}
+.mp-tap-hint{font-size:12px; color:var(--ink-sub); margin-top:2px;}
+.deck-stack.tappable{cursor:pointer;}
+
+/* ---------- Settings ---------- */
+.settings-wrap{flex:1; overflow:auto; padding:6px 16px calc(16px + var(--safe-bottom));}
+.settings-title{text-align:center; font-size:17px; font-weight:800; margin:4px 0 14px;}
+.cat-card{background:#fff; border-radius:18px; padding:14px 16px; margin-bottom:14px; box-shadow:0 2px 8px rgba(0,0,0,.03);}
+.cat-header{display:flex; align-items:center; gap:8px; font-size:16px; font-weight:800; padding:4px 0 8px;}
+.accordion-item{border-top:1px solid #EFEAE0;}
+.accordion-item:first-child{border-top:none;}
+.accordion-head{display:flex; align-items:center; justify-content:space-between; padding:12px 2px; font-size:15px; font-weight:700;}
+.accordion-body{display:none; padding:0 2px 8px;}
+.accordion-body.open{display:block;}
+.danger-row{display:flex; align-items:center; gap:8px; padding:12px 2px; color:var(--danger); font-weight:700; font-size:14px;}
+.list-row{display:flex; align-items:center; justify-content:space-between; padding:13px 2px; font-size:15px; font-weight:700; border-top:1px solid #EFEAE0;}
+.list-row:first-child{border-top:none;}
+.list-row .chev{color:var(--ink-sub);}
+
+/* ---------- About ---------- */
+.about-wrap{flex:1; overflow:auto; padding:6px 16px 20px;}
+.about-item{display:flex; align-items:center; justify-content:space-between; padding:15px 4px; font-size:15px; font-weight:700; border-top:1px solid #EFEAE0;}
+.about-item:first-child{border-top:none;}
+.about-foot{text-align:center; color:var(--ink-sub); font-size:12px; margin-top:22px; line-height:1.8;}
+
+/* ---------- Webview ---------- */
+.webview-iframe{flex:1; border:none; width:100%; background:#fff;}
+.webview-fallback{flex:1; display:flex; align-items:center; justify-content:center; padding:30px; text-align:center; color:var(--ink-sub); font-size:14px;}
+
+/* ---------- Modal ---------- */
+.modal-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.35); display:none; align-items:center; justify-content:center; z-index:100; padding:24px;}
+.modal-backdrop.show{display:flex;}
+.modal-box{background:#fff; border-radius:20px; padding:22px 20px; width:100%; max-width:320px; text-align:center;}
+.modal-msg{font-size:15px; font-weight:700; line-height:1.6; margin-bottom:18px; white-space:pre-line;}
+.modal-actions{display:flex; flex-direction:column; gap:8px;}
+.modal-btn{width:100%; padding:13px; border-radius:14px; border:none; font-size:15px; font-weight:800;}
+.modal-btn.primary{background:var(--theme); color:#fff;}
+.modal-btn.danger{background:var(--danger); color:#fff;}
+.modal-btn.secondary{background:#F0ECE0; color:var(--ink);}
+
+/* ---------- Toast ---------- */
+.toast{position:fixed; left:50%; bottom:90px; transform:translateX(-50%) translateY(10px); background:rgba(44,42,51,.92);
+  color:#fff; padding:10px 18px; border-radius:14px; font-size:13px; font-weight:700; opacity:0; pointer-events:none;
+  transition:opacity .2s, transform .2s; z-index:200;}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+/* ---------- Share preview ---------- */
+.share-canvas-wrap{flex:1; display:flex; align-items:center; justify-content:center; padding:16px;}
+#shareCanvas{width:min(80vw, 320px); height:min(80vw, 320px); border-radius:18px; box-shadow:0 4px 16px rgba(0,0,0,.12);}
+.share-actions{padding:10px 20px calc(16px + var(--safe-bottom)); display:flex; flex-direction:column; gap:10px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- LaunchScreen -->
+  <div id="screen-launch" class="screen active">
+    <div class="launch-title">ハイローラッシュ</div>
+    <div class="launch-sub">HighLowRush</div>
+  </div>
+
+  <!-- Home -->
+  <div id="screen-home" class="screen">
+    <div class="home-bg-pattern"></div>
+    <button class="gear-fab" id="btn-home-gear">⚙️</button>
+    <div class="home-content">
+      <div class="home-title-main">ハイローラッシュ</div>
+      <div class="home-title-sub">HighLowRush</div>
+      <div class="home-catch">つぎのカードは うえ？ した？</div>
+      <div class="home-buttons">
+        <button id="btn-single" class="home-btn">🎴 ひとりであそぶ</button>
+        <div class="single-best-summary">🏆 さいこうきろく <b id="home-best-num">0れんしょう</b></div>
+        <button id="btn-multi" class="home-btn">👥 みんなであそぶ</button>
+      </div>
+    </div>
+    <div class="ad-banner" data-ad="home">広告スペース（バナー）</div>
+  </div>
+
+  <!-- Single Tutorial -->
+  <div id="screen-singletutorial" class="screen">
+    <div class="topbar"><div class="spacer"></div></div>
+    <div class="tut-wrap">
+      <div class="tut-title">あそびかた</div>
+      <div class="tut-rank">A → 2 → 3 → … → Q → K</div>
+      <div class="tut-line">↑ = つぎのカードが 大きい</div>
+      <div class="tut-line">↓ = つぎのカードが 小さい</div>
+      <div class="tut-line">7 → 7 は おなじ！ そのまま つづくよ</div>
+      <div class="tut-line">ちがったら そこで おわり！ なんれんしょう できるかな？</div>
+    </div>
+    <div class="tut-cta"><button id="btn-tut-start" class="big-btn">あそぶ！</button></div>
+  </div>
+
+  <!-- Single Game -->
+  <div id="screen-singlegame" class="screen">
+    <div class="sg-header">
+      <button class="nav-btn sg-home-btn" id="btn-sg-home">ホーム</button>
+      <div class="sg-streak" id="sg-streak">0れんしょう！</div>
+      <div class="sg-best" id="sg-best">さいこうきろく 0れんしょう</div>
+      <div class="sg-cycle" id="sg-cycle"></div>
+    </div>
+    <div class="sg-main">
+      <div class="card-stage">
+        <div class="feedback-overlay" id="sg-feedback"></div>
+        <div class="card-el big" id="sg-card"></div>
+      </div>
+      <div class="deck-stack" id="sg-deck"></div>
+      <div class="deck-remain-text" id="sg-remain">あと 51まい</div>
+    </div>
+    <div class="sg-controls">
+      <button class="history-open-btn" id="btn-sg-history" style="display:none;">📖 でたカード</button>
+      <div class="prob-row" id="sg-prob-row"><span id="sg-prob-center">おなじ 0%</span></div>
+      <div class="arrow-row">
+        <button class="arrow-btn down" id="btn-arrow-down" disabled>
+          <span class="arrow-glyph">↓</span>
+          <span class="arrow-pct" id="sg-pct-down"></span>
+        </button>
+        <button class="arrow-btn up" id="btn-arrow-up" disabled>
+          <span class="arrow-glyph">↑</span>
+          <span class="arrow-pct" id="sg-pct-up"></span>
+        </button>
+      </div>
+    </div>
+    <div class="ad-banner" data-ad="singlegame">広告スペース（バナー）</div>
+    <div class="shuffle-overlay" id="sg-shuffle-overlay">
+      <div id="sg-shuffle-text" class="shuffle-msg">山札を まぜなおしたよ！</div>
+    </div>
+  </div>
+
+  <!-- Single History -->
+  <div id="screen-singlehistory" class="screen">
+    <div class="history-header">
+      <button class="nav-btn" id="btn-sh-back">← もどる</button>
+      <div class="history-title">でたカード</div>
+    </div>
+    <div class="history-remain" id="sh-remain">あと 51まい</div>
+    <div class="history-grid-wrap"><table class="hist-table" id="sh-table"></table></div>
+  </div>
+
+  <!-- Single Result -->
+  <div id="screen-singleresult" class="screen">
+    <div class="result-record" id="sr-record">きろくこうしん！</div>
+    <div class="result-streak" id="sr-streak">0れんしょう！</div>
+    <div class="result-best" id="sr-best">さいこうきろく 0れんしょう</div>
+    <div class="result-actions">
+      <button id="btn-retry" class="big-btn">もういちど</button>
+      <div class="result-small-row">
+        <button class="small-btn" id="btn-sr-share">📤<span>シェア</span></button>
+        <button class="small-btn" id="btn-sr-settings">⚙️<span>せってい</span></button>
+        <button class="small-btn" id="btn-sr-home">🏠<span>ホーム</span></button>
+      </div>
+    </div>
+    <div class="ad-banner" data-ad="singleresult">広告スペース（バナー）</div>
+  </div>
+
+  <!-- Share Preview -->
+  <div id="screen-share" class="screen">
+    <div class="topbar"><button class="nav-btn" id="btn-share-back">← もどる</button></div>
+    <div class="share-canvas-wrap"><canvas id="shareCanvas" width="1080" height="1080"></canvas></div>
+    <div class="share-actions">
+      <button id="btn-share-send" class="big-btn" style="background:linear-gradient(135deg,var(--theme),var(--theme-deep));">シェアする</button>
+    </div>
+  </div>
+
+  <!-- Multiplayer Preset -->
+  <div id="screen-mppreset" class="screen">
+    <div class="topbar"><button class="nav-btn" id="btn-mppreset-home">← もどる</button></div>
+    <div class="preset-wrap">
+      <div class="preset-title">あそびかたをきめる</div>
+      <div class="setting-card">
+        <div class="setting-row">
+          <div class="setting-labels"><div class="setting-name">エンドレス</div><div class="setting-desc">山札を使い切らず、ずっと引き続けられるよ</div></div>
+          <div class="toggle2" data-key="mp_endless"><button data-v="on">つける</button><button data-v="off">けす</button></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-labels"><div class="setting-name">ジョーカー</div><div class="setting-desc">山札にジョーカーを2枚くわえるよ</div></div>
+          <div class="toggle2" data-key="mp_joker"><button data-v="on">つける</button><button data-v="off">けす</button></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-labels"><div class="setting-name">でたカードをみる</div><div class="setting-desc">出たカードの一覧を確認できるよ</div></div>
+          <div class="toggle2" data-key="mp_history"><button data-v="on">つける</button><button data-v="off">けす</button></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-labels"><div class="setting-name">かくりつをみる</div><div class="setting-desc">次のカードの確率を表示するよ</div></div>
+          <div class="toggle2" data-key="mp_probability"><button data-v="on">つける</button><button data-v="off">けす</button></div>
+        </div>
+      </div>
+      <button id="btn-preset-start" class="big-btn">これであそぶ</button>
+    </div>
+    <div class="ad-banner" data-ad="mppreset">広告スペース（バナー）</div>
+  </div>
+
+  <!-- Multiplayer Game -->
+  <div id="screen-mpgame" class="screen">
+    <div class="mp-topnav">
+      <button class="nav-btn" id="btn-mp-home">🏠 ホーム</button>
+      <button class="nav-btn" id="btn-mp-history" style="display:none;">📖 でたカード</button>
+      <button class="nav-btn" id="btn-mp-shuffle" style="display:none;">🔀 山札をまぜる</button>
+      <div class="spacer"></div>
+      <button class="nav-btn" id="btn-mp-settings">⚙️ せってい</button>
+    </div>
+    <div class="mp-main">
+      <div class="mp-deck-card-stack" id="mp-stack">
+        <div class="deck-stack tappable" id="mp-deck"></div>
+        <div class="card-el big" id="mp-card"></div>
+      </div>
+      <div class="deck-remain-text mp-remain-small" id="mp-remain">あと 52まい</div>
+      <div class="mp-tap-hint" id="mp-hint">タップしてね</div>
+      <div class="deck-empty-panel" id="mp-empty-panel" style="display:none;">
+        <div class="deck-empty-msg">山札を つかいきったよ</div>
+        <button class="deck-empty-btn" id="btn-mp-empty-shuffle">🔀 山札をまぜる</button>
+      </div>
+      <div class="prob-row" id="mp-prob-row" style="display:none;">
+        <span id="mp-prob-down"></span><span id="mp-prob-same"></span><span id="mp-prob-up"></span><span id="mp-prob-joker"></span>
+      </div>
+    </div>
+    <div class="ad-banner" data-ad="mpgame">広告スペース（バナー）</div>
+    <div class="shuffle-overlay" id="mp-shuffle-overlay"><div class="shuffle-msg">山札を まぜているよ…</div></div>
+  </div>
+
+  <!-- Multiplayer History -->
+  <div id="screen-mphistory" class="screen">
+    <div class="history-header">
+      <button class="nav-btn" id="btn-mh-back">← もどる</button>
+      <div class="history-title">でたカード</div>
+    </div>
+    <div class="history-remain" id="mh-remain">あと 51まい</div>
+    <div class="history-grid-wrap">
+      <table class="hist-table" id="mh-table"></table>
+      <div class="joker-box" id="mh-joker" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- HowToPlay -->
+  <div id="screen-howto" class="screen">
+    <div class="topbar"><button class="nav-btn" id="btn-howto-back">← もどる</button></div>
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-howto-single">ひとりであそぶ</button>
+      <button class="tab-btn" id="tab-howto-multi">みんなであそぶ</button>
+    </div>
+    <div class="tut-wrap" id="howto-single-body">
+      <div class="tut-rank">A → 2 → 3 → … → Q → K</div>
+      <div class="tut-line">↑ = つぎのカードが 大きい / ↓ = つぎのカードが 小さい</div>
+      <div class="tut-line">7 → 7 は おなじ！ そのまま つづくよ</div>
+      <div class="tut-line">ちがったら そこで おわり！ なんれんしょう できるかな？</div>
+      <div class="tut-line">「かくりつをみる」を つけると、のこりの山札から計算した ↓・おなじ・↑ の割合が見えるよ。</div>
+      <div class="tut-line">「でたカードをみる」を つけると、これまでに出たカードの一覧を確認できるよ。</div>
+      <div class="tut-line">山札を全部使い切ると、自動でまぜなおして続けられるよ。連勝はそのまま引き継がれるよ。</div>
+    </div>
+    <div class="tut-wrap" id="howto-multi-body" style="display:none;">
+      <div class="tut-line">「みんなであそぶ」では、参加者が口頭で「上」か「下」かを言い合って遊ぶよ。アプリは正解・不正解を判定しないよ。</div>
+      <div class="tut-line">山札をタップすると、次のカードがめくれるよ。</div>
+      <div class="tut-line">「エンドレス」をつけると、山札を使い切らず何度でもカードを引けるよ。</div>
+      <div class="tut-line">「ジョーカー」をつけると、山札にジョーカーが2枚くわわるよ。強さの判定はないので、扱いはみんなで決めてね。</div>
+    </div>
+    <div class="ad-banner" data-ad="howto">広告スペース（バナー）</div>
+  </div>
+
+  <!-- Settings -->
+  <div id="screen-settings" class="screen">
+    <div class="topbar"><button class="nav-btn" id="btn-settings-back">← もどる</button></div>
+    <div class="settings-title">せってい</div>
+    <div class="settings-wrap">
+      <div class="cat-card">
+        <div class="cat-header">🎮 ゲーム</div>
+        <div class="accordion-item">
+          <div class="accordion-head" data-acc="single">ひとりであそぶ <span class="chev">▾</span></div>
+          <div class="accordion-body" id="acc-single">
+            <div class="setting-row">
+              <div class="setting-labels"><div class="setting-name">かくりつをみる</div><div class="setting-desc">次のカードの確率を表示するよ</div></div>
+              <div class="toggle2" data-key="single_probability"><button data-v="on">つける</button><button data-v="off">けす</button></div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-labels"><div class="setting-name">でたカードをみる</div><div class="setting-desc">出たカードの一覧を確認できるよ</div></div>
+              <div class="toggle2" data-key="single_history"><button data-v="on">つける</button><button data-v="off">けす</button></div>
+            </div>
+            <div class="danger-row" id="btn-reset-best">🗑 さいこうきろくをけす</div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <div class="accordion-head" data-acc="multi">みんなであそぶ <span class="chev">▾</span></div>
+          <div class="accordion-body" id="acc-multi">
+            <div class="setting-row">
+              <div class="setting-labels"><div class="setting-name">エンドレス</div><div class="setting-desc">山札を使い切らず、ずっと引き続けられるよ</div></div>
+              <div class="toggle2" data-key="mp_endless"><button data-v="on">つける</button><button data-v="off">けす</button></div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-labels"><div class="setting-name">ジョーカー</div><div class="setting-desc">山札にジョーカーを2枚くわえるよ</div></div>
+              <div class="toggle2" data-key="mp_joker"><button data-v="on">つける</button><button data-v="off">けす</button></div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-labels"><div class="setting-name">でたカードをみる</div><div class="setting-desc">出たカードの一覧を確認できるよ</div></div>
+              <div class="toggle2" data-key="mp_history"><button data-v="on">つける</button><button data-v="off">けす</button></div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-labels"><div class="setting-name">かくりつをみる</div><div class="setting-desc">次のカードの確率を表示するよ</div></div>
+              <div class="toggle2" data-key="mp_probability"><button data-v="on">つける</button><button data-v="off">けす</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-header">🔊 おと・しんどう</div>
+        <div class="setting-row">
+          <div class="setting-labels"><div class="setting-name">おと</div><div class="setting-desc">効果音のON/OFFを切り替えるよ</div></div>
+          <div class="toggle2" data-key="sound"><button data-v="on">つける</button><button data-v="off">けす</button></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-labels"><div class="setting-name">しんどう</div><div class="setting-desc">振動のON/OFFを切り替えるよ</div></div>
+          <div class="toggle2" data-key="vibration"><button data-v="on">つける</button><button data-v="off">けす</button></div>
+        </div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-header">📋 そのほか</div>
+        <div class="list-row" id="row-howto">遊び方 <span class="chev">›</span></div>
+        <div class="list-row" id="row-about">このアプリについて <span class="chev">›</span></div>
+      </div>
+    </div>
+    <div class="ad-banner" data-ad="settings">広告スペース（バナー）</div>
+  </div>
+
+  <!-- About -->
+  <div id="screen-about" class="screen">
+    <div class="topbar"><button class="nav-btn" id="btn-about-back">← もどる</button></div>
+    <div class="about-wrap">
+      <div class="about-item" id="row-share-app">このアプリをシェア <span class="chev">›</span></div>
+      <div class="about-item" id="row-review">レビューする <span class="chev">›</span></div>
+      <div class="about-item" id="row-contact">お問い合わせ <span class="chev">›</span></div>
+      <div class="about-item" id="row-privacy">プライバシーポリシー <span class="chev">›</span></div>
+      <div class="about-item" id="row-terms">利用規約 <span class="chev">›</span></div>
+      <div class="about-foot">© 2026 <span id="about-dev-name">Yuta Seki</span><br>バージョン 1.0.0</div>
+    </div>
+  </div>
+
+  <!-- Privacy Webview -->
+  <div id="screen-privacy" class="screen">
+    <div class="topbar"><button class="nav-btn" id="btn-privacy-back">← もどる</button></div>
+    <iframe class="webview-iframe" id="privacy-iframe" src="https://yscaesar3-pixel.github.io/highlowrush-app/privacy-policy.html"></iframe>
+    <div class="webview-fallback" id="privacy-fallback" style="display:none;">つうしんできなかったよ。もういちどためしてね</div>
+  </div>
+  <!-- Terms Webview -->
+  <div id="screen-terms" class="screen">
+    <div class="topbar"><button class="nav-btn" id="btn-terms-back">← もどる</button></div>
+    <iframe class="webview-iframe" id="terms-iframe" src="https://yscaesar3-pixel.github.io/highlowrush-app/terms-of-service.html"></iframe>
+    <div class="webview-fallback" id="terms-fallback" style="display:none;">つうしんできなかったよ。もういちどためしてね</div>
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal-box">
+    <div class="modal-msg" id="modal-msg"></div>
+    <div class="modal-actions" id="modal-actions"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* =========================================================================
+   HighLowRush prototype logic
+   Persistence: localStorage (placeholder for UserDefaults; swap-in ready)
+   Sound: WebAudio synthesized tones (placeholder for real SFX assets)
+   Haptics: navigator.vibrate fallback (placeholder for Capacitor Haptics)
+   Ads: reserved-space placeholder divs (placeholder for AdMob adaptive banner)
+   ========================================================================= */
+
+/* ---------------- Store ---------------- */
+const DEFAULTS = {
+  best: 0,
+  sound: true,
+  vibration: true,
+  single_probability: false,
+  single_history: false,
+  single_tutorial_done: false,
+  mp_endless: false,
+  mp_joker: false,
+  mp_history: false,
+  mp_probability: false,
+};
+const Store = {
+  data: {},
+  load(){
+    this.data = {...DEFAULTS};
+    for(const k of Object.keys(DEFAULTS)){
+      try{
+        const raw = localStorage.getItem('hlr.'+k);
+        if(raw === null) continue;
+        this.data[k] = JSON.parse(raw);
+      }catch(e){ /* corrupted value -> fallback to default, keep others */ }
+    }
+  },
+  get(k){ return this.data[k]; },
+  set(k,v){
+    this.data[k]=v;
+    try{ localStorage.setItem('hlr.'+k, JSON.stringify(v)); }catch(e){}
+  }
+};
+Store.load();
+
+/* ---------------- Audio / Haptics ---------------- */
+let actx=null;
+function ensureAudio(){ if(!actx){ try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } return actx; }
+function beep(freq, dur, type, vol){
+  if(!Store.get('sound')) return;
+  const ctx = ensureAudio(); if(!ctx) return;
+  if(ctx.state==='suspended') ctx.resume();
+  const o = ctx.createOscillator(); const g = ctx.createGain();
+  o.type = type||'sine'; o.frequency.value = freq;
+  g.gain.value = 0;
+  o.connect(g); g.connect(ctx.destination);
+  const now = ctx.currentTime;
+  g.gain.linearRampToValueAtTime(vol||0.12, now+0.01);
+  g.gain.exponentialRampToValueAtTime(0.001, now+dur);
+  o.start(now); o.stop(now+dur+0.02);
+}
+const Sound = {
+  tap(){ beep(520,.06,'sine',.08); },
+  flip(){ beep(700,.07,'triangle',.09); },
+  correct(){ beep(880,.14,'sine',.12); setTimeout(()=>beep(1180,.12,'sine',.1),70); },
+  drawSame(){ beep(600,.16,'sine',.09); },
+  wrong(){ beep(220,.28,'sawtooth',.1); },
+  newRecord(){ beep(990,.1,'sine',.12); setTimeout(()=>beep(1320,.1,'sine',.12),90); setTimeout(()=>beep(1580,.16,'sine',.12),180); },
+  shuffle(){ for(let i=0;i<5;i++) setTimeout(()=>beep(300+Math.random()*400,.05,'square',.05), i*60); },
+};
+const Haptic = {
+  light(){ if(Store.get('vibration') && navigator.vibrate) navigator.vibrate(10); },
+  medium(){ if(Store.get('vibration') && navigator.vibrate) navigator.vibrate(18); },
+  strong(){ if(Store.get('vibration') && navigator.vibrate) navigator.vibrate([0,30,30,30]); },
+};
+
+/* ---------------- Card model ---------------- */
+const RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+const SUITS = ['♦','♥','♠','♣']; // fixed column order per spec
+const APP_STORE_ID = '6803045346'; // App Store Connect Apple ID
+const APP_STORE_URL = 'https://apps.apple.com/app/id' + APP_STORE_ID;
+const APP_STORE_REVIEW_URL = 'https://apps.apple.com/app/id' + APP_STORE_ID + '?action=write-review';
+function rankIdx(r){ return RANKS.indexOf(r); }
+function suitColor(s){ return (s==='♥'||s==='♦') ? 'suit-red' : 'suit-gray'; }
+function cardKey(c){ return c.isJoker ? 'JOKER-'+c.jid : c.rank+'-'+c.suit; }
+function buildDeck(withJoker){
+  const d=[];
+  for(const s of SUITS) for(const r of RANKS) d.push({rank:r, suit:s, isJoker:false});
+  if(withJoker){ d.push({isJoker:true, jid:1}); d.push({isJoker:true, jid:2}); }
+  return d;
+}
+function shuffle(arr){
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function pct3(a,b,c){
+  // largest-remainder rounding so a+b+c === 100
+  const total = a+b+c;
+  if(total<=0) return [0,0,0];
+  const raw = [a,b,c].map(v=>v/total*100);
+  const floor = raw.map(Math.floor);
+  let remainder = 100 - floor.reduce((x,y)=>x+y,0);
+  const order = [0,1,2].map(i=>({i, frac: raw[i]-floor[i]})).sort((x,y)=>y.frac-x.frac);
+  for(let k=0;k<remainder;k++) floor[order[k%3].i]++;
+  return floor;
+}
+function pct4(a,b,c,d){
+  const total=a+b+c+d;
+  if(total<=0) return [0,0,0,0];
+  const raw=[a,b,c,d].map(v=>v/total*100);
+  const floor = raw.map(Math.floor);
+  let remainder = 100 - floor.reduce((x,y)=>x+y,0);
+  const order = [0,1,2,3].map(i=>({i, frac: raw[i]-floor[i]})).sort((x,y)=>y.frac-x.frac);
+  for(let k=0;k<remainder;k++) floor[order[k%4].i]++;
+  return floor;
+}
+function fmtStreak(n){ return (n>999 ? '999+' : n) + 'れんしょう'; }
+function fmtStreakBang(n){ return fmtStreak(n) + '！'; } // used for CURRENT streak displays only (spec: `○れんしょう！`); BEST never gets the bang.
+function fmtCycle(n){ return (n>99 ? '99+' : n) + 'しゅうめ'; }
+
+function renderCardFace(card){
+  if(card.isJoker){
+    return `<div class="card-corner tl">JOKER</div><div class="card-center"><div class="card-rank">🃏</div></div><div class="card-corner br">JOKER</div>`;
+  }
+  const cls = suitColor(card.suit);
+  return `<div class="card-corner tl ${cls}">${card.rank}<br>${card.suit}</div>
+    <div class="card-center"><div class="card-rank ${cls}">${card.rank==='A'?card.suit:card.rank}</div>${card.rank!=='A'?`<div class="card-suit-main ${cls}">${card.suit}</div>`:''}</div>
+    <div class="card-corner br ${cls}">${card.rank}<br>${card.suit}</div>`;
+}
+function cardBackHTML(){
+  return `<div class="card-back-pattern"></div><div class="card-back-logo">H</div>`;
+}
+function buildCardEl(container, card, {flippedIn=false}={}){
+  container.classList.toggle('joker', !!card.isJoker);
+  container.innerHTML = `<div class="card-inner">
+      <div class="card-face">${renderCardFace(card)}</div>
+      <div class="card-back-face">${cardBackHTML()}</div>
+    </div>`;
+  const inner = container.querySelector('.card-inner');
+  if(!flippedIn) inner.classList.add('flipped'); // show back first, then flip to reveal
+  return inner;
+}
+
+/* ---------------- Navigation ---------------- */
+const screens = {};
+document.querySelectorAll('.screen').forEach(s=>screens[s.id]=s);
+let settingsReturnTo = 'screen-home';
+function nav(id){
+  Object.values(screens).forEach(s=>s.classList.remove('active'));
+  screens[id].classList.add('active');
+}
+
+/* ---------------- Modal ---------------- */
+function showModal(msg, buttons){
+  document.getElementById('modal-msg').textContent = msg;
+  const actions = document.getElementById('modal-actions');
+  actions.innerHTML='';
+  buttons.forEach(b=>{
+    const btn = document.createElement('button');
+    btn.className = 'modal-btn ' + (b.style||'secondary');
+    btn.textContent = b.label;
+    btn.onclick = ()=>{ hideModal(); Sound.tap(); Haptic.light(); b.onClick && b.onClick(); };
+    actions.appendChild(btn);
+  });
+  document.getElementById('modal-backdrop').classList.add('show');
+}
+function hideModal(){ document.getElementById('modal-backdrop').classList.remove('show'); }
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>t.classList.remove('show'), 1400);
+}
+
+/* ---------------- Toggle rendering (shared) ---------------- */
+function paintToggle(el){
+  const key = el.dataset.key;
+  const val = !!Store.get(key);
+  el.querySelectorAll('button').forEach(b=>{
+    b.classList.toggle('on', (b.dataset.v==='on') === val);
+  });
+}
+function paintAllToggles(){ document.querySelectorAll('.toggle2').forEach(paintToggle); }
+
+document.querySelectorAll('.toggle2').forEach(el=>{
+  el.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=> onToggleClick(el, btn.dataset.v==='on'));
+  });
+});
+
+function onToggleClick(el, newVal){
+  const key = el.dataset.key;
+  const oldVal = !!Store.get(key);
+  if(newVal===oldVal) return;
+  Sound.tap(); Haptic.light();
+  const affectsDeck = (key==='mp_endless' || key==='mp_joker');
+  if(affectsDeck && MP.sessionStarted && screens['screen-mpgame'].classList.contains('active') === false && MP.sessionActive){
+    // changed from settings screen while a multiplayer session exists
+    confirmMpSettingChange(key, newVal, el);
+    return;
+  }
+  Store.set(key, newVal);
+  paintToggle(el);
+  onSettingChanged(key);
+}
+function confirmMpSettingChange(key, newVal, el){
+  const msg = Store.get('mp_endless') ? 'せっていをかえると、いままでのカードはきえるよ' : 'せっていをかえると、いまの山札はさいしょからになるよ';
+  showModal(msg, [
+    {label:'やめる', style:'secondary'},
+    {label:'せっていをかえる', style:'primary', onClick:()=>{
+      Store.set(key,newVal); paintToggle(el);
+      MP.resetSession();
+    }}
+  ]);
+}
+function onSettingChanged(key){
+  if(key==='single_history') SG.renderHistoryButtonVisibility();
+  if(key==='single_probability') SG.renderProbabilityVisibility();
+  if(key==='mp_history') MP.renderTopNav();
+  if(key==='mp_probability') MP.renderProbabilityVisibility();
+}
+
+/* =====================================================================
+   HOME
+   ===================================================================== */
+function refreshHomeBest(){
+  const b = Store.get('best');
+  document.getElementById('home-best-num').textContent = (b>999?'999+':b) + 'れんしょう';
+}
+document.getElementById('btn-home-gear').onclick = ()=>{ Sound.tap(); Haptic.light(); settingsReturnTo='screen-home'; nav('screen-settings'); };
+document.getElementById('btn-single').onclick = ()=>{
+  Sound.tap(); Haptic.light();
+  if(!Store.get('single_tutorial_done')){ nav('screen-singletutorial'); }
+  else { SG.startNewGame(); nav('screen-singlegame'); }
+};
+document.getElementById('btn-tut-start').onclick = ()=>{
+  Sound.tap(); Haptic.light();
+  Store.set('single_tutorial_done', true);
+  SG.startNewGame(); nav('screen-singlegame');
+};
+document.getElementById('btn-multi').onclick = ()=>{ Sound.tap(); Haptic.light(); nav('screen-mppreset'); };
+
+/* =====================================================================
+   SINGLE PLAYER
+   ===================================================================== */
+const SG = {
+  currentCard:null, pool:[], cycle:1, streak:0, historySet:null, locked:true, lastWasNewBest:false,
+  startNewGame(){
+    this.cycle = 1; this.streak = 0;
+    const deck = shuffle(buildDeck(false));
+    this.currentCard = deck.pop();
+    this.pool = deck; // 51 remain
+    this.historySet = new Set([cardKey(this.currentCard)]);
+    this.locked = true;
+    this.renderAll();
+    // initial reveal animation
+    const cardEl = document.getElementById('sg-card');
+    buildCardEl(cardEl, this.currentCard, {flippedIn:true});
+    const inner = cardEl.querySelector('.card-inner');
+    inner.classList.add('flipped');
+    requestAnimationFrame(()=>{ inner.classList.remove('flipped'); });
+    Sound.flip();
+    setTimeout(()=>{ this.locked=false; this.updateArrowState(); }, 260);
+  },
+  renderAll(){
+    document.getElementById('sg-streak').textContent = fmtStreakBang(this.streak);
+    document.getElementById('sg-best').textContent = 'さいこうきろく ' + fmtStreak(Store.get('best'));
+    document.getElementById('sg-cycle').textContent = this.cycle>1 ? fmtCycle(this.cycle) : '';
+    document.getElementById('sg-remain').textContent = 'あと ' + this.pool.length + 'まい';
+    this.renderDeckStack();
+    this.renderHistoryButtonVisibility();
+    this.renderProbabilityVisibility();
+    this.renderProbabilityValues();
+  },
+  renderDeckStack(){
+    const wrap = document.getElementById('sg-deck');
+    const n = this.pool.length;
+    const layers = n<=0 ? 0 : Math.max(2, Math.min(4, Math.ceil(n/17)+1));
+    wrap.innerHTML='';
+    if(n<=0){ return; }
+    for(let i=0;i<layers;i++){
+      const d = document.createElement('div');
+      d.className='deck-layer';
+      d.style.transform = `translate(${i*2}px, ${i*2}px)`;
+      d.style.zIndex = 10-i;
+      wrap.appendChild(d);
+    }
+  },
+  renderHistoryButtonVisibility(){
+    document.getElementById('btn-sg-history').style.display = Store.get('single_history') ? '' : 'none';
+  },
+  renderProbabilityVisibility(){
+    document.getElementById('sg-prob-row').classList.toggle('hidden', !Store.get('single_probability'));
+  },
+  calcProb(){
+    const cur = rankIdx(this.currentCard.rank);
+    let down=0, same=0, up=0;
+    for(const c of this.pool){ const ci = rankIdx(c.rank); if(ci<cur) down++; else if(ci>cur) up++; else same++; }
+    return pct3(down, same, up);
+  },
+  renderProbabilityValues(){
+    if(!Store.get('single_probability')) return;
+    const [d,s,u] = this.calcProb();
+    document.getElementById('sg-pct-down').textContent = d+'%';
+    document.getElementById('sg-pct-up').textContent = u+'%';
+    document.getElementById('sg-prob-center').textContent = 'おなじ ' + s + '%';
+  },
+  updateArrowState(){
+    const dis = this.locked;
+    document.getElementById('btn-arrow-down').disabled = dis;
+    document.getElementById('btn-arrow-up').disabled = dis;
+  },
+  guess(direction){
+    if(this.locked) return;
+    this.locked = true; this.updateArrowState();
+    Sound.tap(); Haptic.light();
+    const btn = document.getElementById(direction==='up'?'btn-arrow-up':'btn-arrow-down');
+    btn.classList.add('pressed'); setTimeout(()=>btn.classList.remove('pressed'), 150);
+
+    const drawn = this.pool.shift();
+    document.getElementById('sg-remain').textContent = 'あと ' + this.pool.length + 'まい';
+    this.renderDeckStack();
+
+    // animate slide+flip
+    const cardEl = document.getElementById('sg-card');
+    cardEl.style.transition='none';
+    cardEl.style.transform = direction==='up' ? 'translateX(18px)' : 'translateX(-18px)';
+    requestAnimationFrame(()=>{
+      cardEl.style.transition='transform .16s ease-out';
+      cardEl.style.transform='translateX(0)';
+    });
+    buildCardEl(cardEl, drawn, {flippedIn:true});
+    const inner = cardEl.querySelector('.card-inner');
+    inner.classList.add('flipped');
+    Sound.flip();
+    requestAnimationFrame(()=> setTimeout(()=>{ inner.classList.remove('flipped'); }, 20));
+
+    setTimeout(()=> this.resolveGuess(direction, drawn), 220);
+  },
+  resolveGuess(direction, drawn){
+    const curI = rankIdx(this.currentCard.rank);
+    const drawI = rankIdx(drawn.rank);
+    let outcome;
+    if(drawI===curI) outcome='draw';
+    else if((drawI>curI && direction==='up') || (drawI<curI && direction==='down')) outcome='correct';
+    else outcome='wrong';
+
+    if(outcome==='wrong'){
+      this.showFeedback('ざんねん！','wrong', 1000);
+      Sound.wrong(); Haptic.strong();
+      // losing card stays displayed (already shown)
+      const finalStreak = this.streak;
+      let newBest=false;
+      if(finalStreak > Store.get('best')){ Store.set('best', finalStreak); newBest=true; }
+      setTimeout(()=>{ this.goToResult(finalStreak, newBest); }, 1000);
+      return;
+    }
+
+    this.currentCard = drawn;
+    this.historySet.add(cardKey(drawn));
+
+    if(outcome==='correct'){
+      this.streak++;
+      this.showFeedback('せいかい！','correct', 500);
+      Sound.correct(); Haptic.light();
+      const streakEl = document.getElementById('sg-streak');
+      streakEl.classList.remove('pop'); void streakEl.offsetWidth; streakEl.classList.add('pop');
+    } else {
+      this.showFeedback('おなじ！','draw', 500);
+      Sound.drawSame(); Haptic.light();
+    }
+    document.getElementById('sg-streak').textContent = fmtStreakBang(this.streak);
+    this.renderProbabilityValues();
+
+    setTimeout(()=>{
+      if(this.pool.length===0){ this.runReshuffleCycle(); }
+      else { this.locked=false; this.updateArrowState(); }
+    }, 500);
+  },
+  showFeedback(text, cls, dur){
+    const el = document.getElementById('sg-feedback');
+    el.textContent = text;
+    el.className = 'feedback-overlay show ' + cls;
+    setTimeout(()=>{ el.classList.remove('show'); }, dur);
+  },
+  runReshuffleCycle(){
+    const overlay = document.getElementById('sg-shuffle-overlay');
+    const textEl = document.getElementById('sg-shuffle-text');
+    overlay.classList.add('show');
+    Sound.shuffle(); Haptic.light();
+    textEl.textContent = '山札を まぜなおしたよ！';
+    setTimeout(()=>{
+      this.cycle++;
+      textEl.textContent = fmtCycle(this.cycle) + '！';
+      setTimeout(()=>{
+        const deck = shuffle(buildDeck(false).filter(c => cardKey(c) !== cardKey(this.currentCard)));
+        this.pool = deck;
+        this.historySet = new Set([cardKey(this.currentCard)]);
+        overlay.classList.remove('show');
+        this.renderAll();
+        this.locked=false; this.updateArrowState();
+      }, 700);
+    }, 700);
+  },
+  goToResult(finalStreak, isNewBest){
+    document.getElementById('sr-record').classList.toggle('show', isNewBest);
+    document.getElementById('sr-streak').textContent = fmtStreakBang(finalStreak);
+    document.getElementById('sr-best').textContent = 'さいこうきろく ' + fmtStreak(Store.get('best'));
+    if(isNewBest){ Sound.newRecord(); Haptic.strong(); }
+    this._lastResultStreak = finalStreak;
+    this._lastResultNewBest = isNewBest;
+    nav('screen-singleresult');
+  },
+};
+document.getElementById('btn-arrow-down').onclick = ()=>SG.guess('down');
+document.getElementById('btn-arrow-up').onclick = ()=>SG.guess('up');
+document.getElementById('btn-sg-home').onclick = ()=>{
+  Sound.tap(); Haptic.light();
+  showModal('ホームにもどると、いまのゲームは おわるよ', [
+    {label:'やめる', style:'secondary'},
+    {label:'ホームにもどる', style:'danger', onClick:()=>{ refreshHomeBest(); nav('screen-home'); }}
+  ]);
+};
+document.getElementById('btn-sg-history').onclick = ()=>{ Sound.tap(); Haptic.light(); SGHistory.open(); };
+
+/* ---- Single History ---- */
+const SGHistory = {
+  open(){
+    document.getElementById('sh-remain').textContent = 'あと ' + SG.pool.length + 'まい';
+    this.renderTable();
+    nav('screen-singlehistory');
+  },
+  renderTable(){
+    const table = document.getElementById('sh-table');
+    let html = '<tr><th></th>' + SUITS.map(s=>`<th class="${suitColor(s)}">${s}</th>`).join('') + '</tr>';
+    for(const r of RANKS){
+      html += `<tr><th>${r}</th>`;
+      for(const s of SUITS){
+        const key = r+'-'+s;
+        const isCurrent = cardKey(SG.currentCard)===key;
+        const isDrawn = SG.historySet.has(key);
+        const cls = ['hist-cell'];
+        if(isCurrent) cls.push('current'); else if(isDrawn) cls.push('drawn');
+        html += `<td><div class="${cls.join(' ')}"><span class="r ${suitColor(s)}">${r}</span><span class="s ${suitColor(s)}">${s}</span></div></td>`;
+      }
+      html += '</tr>';
+    }
+    table.innerHTML = html;
+  }
+};
+document.getElementById('btn-sh-back').onclick = ()=>{ Sound.tap(); Haptic.light(); nav('screen-singlegame'); };
+
+/* ---- Single Result actions ---- */
+document.getElementById('btn-retry').onclick = ()=>{ Sound.tap(); Haptic.light(); SG.startNewGame(); nav('screen-singlegame'); };
+document.getElementById('btn-sr-home').onclick = ()=>{ Sound.tap(); Haptic.light(); refreshHomeBest(); nav('screen-home'); };
+document.getElementById('btn-sr-settings').onclick = ()=>{ Sound.tap(); Haptic.light(); settingsReturnTo='screen-singleresult'; nav('screen-settings'); };
+document.getElementById('btn-sr-share').onclick = ()=>{ Sound.tap(); Haptic.light(); openSharePreview(); };
+
+/* ---- Share image (canvas, placeholder design) ---- */
+function openSharePreview(){
+  const canvas = document.getElementById('shareCanvas');
+  const ctx = canvas.getContext('2d');
+  const W=1080,H=1080;
+  const grad = ctx.createLinearGradient(0,0,W,H);
+  grad.addColorStop(0,'#FF6B9D'); grad.addColorStop(.5,'#7C4DFF'); grad.addColorStop(1,'#2F80ED');
+  ctx.fillStyle = grad; ctx.fillRect(0,0,W,H);
+  // faint suit pattern (placeholder)
+  ctx.globalAlpha = .12; ctx.fillStyle='#fff'; ctx.font='90px sans-serif';
+  const suits=['♠','♥','♦','♣'];
+  for(let y=60;y<H;y+=140) for(let x=60;x<W;x+=140) ctx.fillText(suits[(x+y)%4|0]%4>=0?suits[Math.floor((x/140+y/140))%4]:'♠', x, y);
+  ctx.globalAlpha=1;
+
+  const newBest = SG._lastResultNewBest;
+  const streak = SG._lastResultStreak||0;
+  const best = Store.get('best');
+  let cy = 380;
+  if(newBest){
+    ctx.fillStyle='#E3B23C'; ctx.font='bold 54px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('きろくこうしん！', W/2, cy); cy += 100;
+  }
+  ctx.fillStyle='#fff'; ctx.font='bold 120px sans-serif'; ctx.textAlign='center';
+  ctx.fillText(streak + 'れんしょう！', W/2, cy+60);
+  ctx.font='bold 46px sans-serif'; ctx.fillStyle='rgba(255,255,255,.9)';
+  ctx.fillText('さいこうきろく ' + best + 'れんしょう', W/2, cy+140);
+
+  // app name/logo bottom-left
+  ctx.textAlign='left'; ctx.font='bold 36px sans-serif'; ctx.fillStyle='#fff';
+  ctx.fillText('ハイローラッシュ', 60, H-70);
+
+  // QR placeholder bottom-right (final: real QR encoding APP_STORE_URL, e.g. via a QR library, once art assets are finalized)
+  const plateW=220, plateH=260, px=W-60-plateW, py=H-60-plateH;
+  ctx.fillStyle='#fff'; roundRect(ctx, px, py, plateW, plateH, 20); ctx.fill();
+  ctx.fillStyle='#333'; ctx.font='16px sans-serif'; ctx.textAlign='center';
+  ctx.fillText('QR', px+plateW/2, py+plateH/2-30);
+  ctx.strokeStyle='#333'; ctx.strokeRect(px+plateW/2-60, py+30, 120,120);
+  ctx.font='14px sans-serif'; ctx.fillStyle='#333';
+  ctx.fillText('アプリストアで', px+plateW/2, py+plateH-38);
+  ctx.fillText('あそべるよ', px+plateW/2, py+plateH-18);
+
+  nav('screen-share');
+}
+function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+document.getElementById('btn-share-back').onclick = ()=>{ Sound.tap(); Haptic.light(); nav('screen-singleresult'); };
+document.getElementById('btn-share-send').onclick = ()=>{
+  Sound.tap(); Haptic.light();
+  const canvas = document.getElementById('shareCanvas');
+  const text = 'つぎのカードは うえ？ した？ ひとりでも みんなでもあそべるハイローゲームだよ！\n' + APP_STORE_URL;
+  canvas.toBlob(async (blob)=>{
+    try{
+      if(navigator.share && navigator.canShare && navigator.canShare({files:[new File([blob],'highlowrush.png',{type:'image/png'})]})){
+        await navigator.share({files:[new File([blob],'highlowrush.png',{type:'image/png'})], text});
+      } else if(navigator.share){
+        await navigator.share({text});
+      } else {
+        showToast('この端末では共有できません（プロトタイプ）');
+      }
+    }catch(e){ /* user cancelled */ }
+  });
+};
+
+/* =====================================================================
+   MULTIPLAYER
+   ===================================================================== */
+const MP = {
+  pool:[], currentCard:null, jokerDrawn:0, jokerCountEndless:0, historySet:null,
+  locked:true, sessionActive:false, sessionStarted:false,
+  startNewSession(){
+    const endless = Store.get('mp_endless');
+    const joker = Store.get('mp_joker');
+    this.fullDeck = buildDeck(joker);
+    this.pool = endless ? null : shuffle(this.fullDeck);
+    this.currentCard = null;
+    this.jokerDrawn = 0; this.jokerCountEndless = 0;
+    this.historySet = new Set();
+    this.locked = false;
+    this.sessionActive = true; this.sessionStarted = true;
+    document.getElementById('mp-hint').style.display='';
+    document.getElementById('mp-card').innerHTML='';
+    this.renderAll();
+  },
+  resetSession(){
+    // called after mid-game settings confirmation
+    this.startNewSession();
+  },
+  isEndless(){ return Store.get('mp_endless'); },
+  remainingCount(){ return this.isEndless() ? null : this.pool.length; },
+  renderAll(){
+    this.renderTopNav();
+    this.renderDeck();
+    this.renderProbabilityVisibility();
+    this.renderProbabilityValues();
+  },
+  renderTopNav(){
+    document.getElementById('btn-mp-history').style.display = Store.get('mp_history') ? '' : 'none';
+    document.getElementById('btn-mp-shuffle').style.display = (!this.isEndless()) ? '' : 'none';
+  },
+  renderDeck(){
+    const wrap = document.getElementById('mp-deck');
+    wrap.innerHTML='';
+    const remainEl = document.getElementById('mp-remain');
+    const emptyPanel = document.getElementById('mp-empty-panel');
+    const hint = document.getElementById('mp-hint');
+    if(this.isEndless()){
+      // constant thickness deck stack + ∞ shown together (deck_visual_thickness: constant)
+      wrap.classList.add('tappable');
+      for(let i=0;i<3;i++){
+        const d = document.createElement('div'); d.className='deck-layer';
+        d.style.transform = `translate(${i*2}px, ${i*2}px)`; d.style.zIndex = 10-i;
+        wrap.appendChild(d);
+      }
+      const inf = document.createElement('div'); inf.className='deck-infinity'; inf.textContent='∞';
+      wrap.appendChild(inf);
+      remainEl.textContent='';
+      emptyPanel.style.display='none';
+      hint.style.display = this.currentCard ? 'none' : '';
+      return;
+    }
+    const n = this.pool.length;
+    if(n<=0){
+      wrap.classList.remove('tappable');
+      remainEl.textContent='';
+      hint.style.display='none';
+      emptyPanel.style.display='flex';
+      document.getElementById('btn-mp-shuffle').style.display='';
+      return;
+    }
+    wrap.classList.add('tappable');
+    emptyPanel.style.display='none';
+    const layers = Math.max(2, Math.min(4, Math.ceil(n/18)+1));
+    for(let i=0;i<layers;i++){
+      const d = document.createElement('div'); d.className='deck-layer';
+      d.style.transform = `translate(${i*2}px, ${i*2}px)`; d.style.zIndex = 10-i;
+      wrap.appendChild(d);
+    }
+    remainEl.textContent = 'あと ' + n + 'まい';
+    hint.style.display = this.currentCard ? 'none' : '';
+  },
+  tapDeck(){
+    if(this.locked) return;
+    if(!this.isEndless() && this.pool.length<=0) return; // deck empty: use shuffle button instead
+    this.locked = true;
+    Sound.tap(); Haptic.light();
+    let drawn;
+    if(this.isEndless()){
+      drawn = this.fullDeck[Math.floor(Math.random()*this.fullDeck.length)];
+    } else {
+      drawn = this.pool.shift();
+    }
+    if(drawn.isJoker){
+      if(this.isEndless()) this.jokerCountEndless++; else this.jokerDrawn++;
+    } else {
+      this.historySet.add(cardKey(drawn));
+    }
+    this.currentCard = drawn;
+    document.getElementById('mp-hint').style.display='none';
+    this.renderDeck();
+
+    const cardEl = document.getElementById('mp-card');
+    buildCardEl(cardEl, drawn, {flippedIn:true});
+    const inner = cardEl.querySelector('.card-inner');
+    inner.classList.add('flipped');
+    Sound.flip(); Haptic.light();
+    requestAnimationFrame(()=> setTimeout(()=>{ inner.classList.remove('flipped'); }, 20));
+
+    this.renderProbabilityValues();
+    setTimeout(()=>{ this.locked=false; }, 400);
+  },
+  renderProbabilityVisibility(){
+    const on = Store.get('mp_probability') && this.currentCard && !this.currentCard.isJoker;
+    document.getElementById('mp-prob-row').style.display = on ? '' : 'none';
+  },
+  renderProbabilityValues(){
+    this.renderProbabilityVisibility();
+    if(!Store.get('mp_probability') || !this.currentCard || this.currentCard.isJoker) return;
+    const joker = Store.get('mp_joker');
+    const curI = rankIdx(this.currentCard.rank);
+    let refPool;
+    if(this.isEndless()){ refPool = this.fullDeck; }
+    else { refPool = this.pool; if(refPool.length<=0){ document.getElementById('mp-prob-row').style.display='none'; return; } }
+    let down=0, same=0, up=0, jok=0;
+    for(const c of refPool){
+      if(c.isJoker){ jok++; continue; }
+      const ci = rankIdx(c.rank);
+      if(ci<curI) down++; else if(ci>curI) up++; else same++;
+    }
+    if(joker){
+      const [d,s,u,j] = pct4(down,same,up,jok);
+      document.getElementById('mp-prob-down').textContent = '↓ '+d+'%';
+      document.getElementById('mp-prob-same').textContent = 'おなじ '+s+'%';
+      document.getElementById('mp-prob-up').textContent = '↑ '+u+'%';
+      document.getElementById('mp-prob-joker').textContent = 'ジョーカー '+j+'%';
+      document.getElementById('mp-prob-joker').style.display='';
+    } else {
+      const [d,s,u] = pct3(down,same,up);
+      document.getElementById('mp-prob-down').textContent = '↓ '+d+'%';
+      document.getElementById('mp-prob-same').textContent = 'おなじ '+s+'%';
+      document.getElementById('mp-prob-up').textContent = '↑ '+u+'%';
+      document.getElementById('mp-prob-joker').style.display='none';
+    }
+  },
+  doShuffle(){
+    showModal('山札をまぜなおす？', [
+      {label:'やめる', style:'secondary'},
+      {label:'まぜなおす', style:'primary', onClick:()=>this.runShuffleAnim()}
+    ]);
+  },
+  runShuffleAnim(){
+    const overlay = document.getElementById('mp-shuffle-overlay');
+    overlay.classList.add('show');
+    Sound.shuffle(); Haptic.light();
+    this.locked = true;
+    setTimeout(()=>{
+      const joker = Store.get('mp_joker');
+      this.fullDeck = buildDeck(joker);
+      this.pool = shuffle(this.fullDeck);
+      this.currentCard = null;
+      this.jokerDrawn = 0;
+      this.historySet = new Set();
+      document.getElementById('mp-card').innerHTML='';
+      document.getElementById('mp-hint').style.display='';
+      overlay.classList.remove('show');
+      this.renderAll();
+      this.locked = false;
+    }, 650);
+  },
+};
+document.getElementById('mp-stack').onclick = ()=>MP.tapDeck();
+document.getElementById('btn-mp-shuffle').onclick = ()=>{ Sound.tap(); Haptic.light(); MP.doShuffle(); };
+document.getElementById('btn-mp-empty-shuffle').onclick = ()=>{ Sound.tap(); Haptic.light(); MP.doShuffle(); };
+document.getElementById('btn-mp-settings').onclick = ()=>{ Sound.tap(); Haptic.light(); settingsReturnTo='screen-mpgame'; nav('screen-settings'); };
+document.getElementById('btn-mp-home').onclick = ()=>{
+  Sound.tap(); Haptic.light();
+  const msg = MP.isEndless() ? 'ホームにもどると、いままでのカードはきえるよ' : (MP.pool && MP.pool.length<=0 ? null : 'ホームにもどると、いまの山札はなくなるよ');
+  const goHome = ()=>{ MP.sessionActive=false; refreshHomeBest(); nav('screen-home'); };
+  if(msg===null){ goHome(); } else {
+    showModal(msg, [
+      {label:'やめる', style:'secondary'},
+      {label:'ホームにもどる', style:'danger', onClick:goHome}
+    ]);
+  }
+};
+document.getElementById('btn-mp-history').onclick = ()=>{ Sound.tap(); Haptic.light(); MPHistory.open(); };
+
+/* ---- Multiplayer Preset screen ---- */
+document.getElementById('btn-mppreset-home').onclick = ()=>{ Sound.tap(); Haptic.light(); nav('screen-home'); };
+document.getElementById('btn-preset-start').onclick = ()=>{
+  Sound.tap(); Haptic.light();
+  MP.startNewSession();
+  nav('screen-mpgame');
+};
+
+/* ---- Multiplayer History ---- */
+const MPHistory = {
+  open(){
+    const joker = Store.get('mp_joker');
+    document.getElementById('mh-remain').textContent = MP.isEndless() ? '' : (MP.pool.length>0 ? 'あと ' + MP.pool.length + 'まい' : '');
+    this.renderTable();
+    const jokerBox = document.getElementById('mh-joker');
+    if(joker){
+      jokerBox.style.display='';
+      jokerBox.textContent = MP.isEndless() ? ('ジョーカー ×' + (MP.jokerCountEndless>99?'99+':MP.jokerCountEndless))
+        : ('ジョーカー ' + MP.jokerDrawn + '/2');
+    } else { jokerBox.style.display='none'; }
+    nav('screen-mphistory');
+  },
+  renderTable(){
+    const table = document.getElementById('mh-table');
+    let html = '<tr><th></th>' + SUITS.map(s=>`<th class="${suitColor(s)}">${s}</th>`).join('') + '</tr>';
+    for(const r of RANKS){
+      html += `<tr><th>${r}</th>`;
+      for(const s of SUITS){
+        const key = r+'-'+s;
+        const isCurrent = MP.currentCard && !MP.currentCard.isJoker && cardKey(MP.currentCard)===key;
+        const cls = ['hist-cell'];
+        let countLabel='';
+        if(MP.isEndless()){
+          const n = MP.historyCountMap ? (MP.historyCountMap[key]||0) : 0;
+          if(isCurrent) cls.push('current'); else if(n<=0) cls.push('drawn');
+          if(n>0) countLabel = '×'+(n>99?'99+':n);
+        } else {
+          const isDrawn = MP.historySet.has(key);
+          if(isCurrent) cls.push('current'); else if(isDrawn) cls.push('drawn');
+        }
+        html += `<td><div class="${cls.join(' ')}"><span class="r ${suitColor(s)}">${r}</span><span class="s ${suitColor(s)}">${s}</span>${countLabel?`<span class="cnt">${countLabel}</span>`:''}</div></td>`;
+      }
+      html += '</tr>';
+    }
+    table.innerHTML = html;
+  }
+};
+document.getElementById('btn-mh-back').onclick = ()=>{ Sound.tap(); Haptic.light(); nav('screen-mpgame'); };
+
+// track endless occurrence counts
+(function patchEndlessCount(){
+  const origTap = MP.tapDeck.bind(MP);
+  MP.tapDeck = function(){
+    if(this.locked) return;
+    if(!this.isEndless() && this.pool.length<=0) return;
+    if(!this.historyCountMap) this.historyCountMap = {};
+    origTap();
+    if(this.currentCard && !this.currentCard.isJoker){
+      const k = cardKey(this.currentCard);
+      this.historyCountMap[k] = (this.historyCountMap[k]||0)+1;
+    }
+  };
+  const origStart = MP.startNewSession.bind(MP);
+  MP.startNewSession = function(){ this.historyCountMap = {}; origStart(); };
+})();
+
+/* =====================================================================
+   SETTINGS / ABOUT / HOWTO / WEBVIEWS
+   ===================================================================== */
+document.getElementById('btn-settings-back').onclick = ()=>{ Sound.tap(); Haptic.light(); nav(settingsReturnTo); if(settingsReturnTo==='screen-home') refreshHomeBest(); };
+document.querySelectorAll('.accordion-head').forEach(h=>{
+  h.onclick = ()=>{
+    Sound.tap(); Haptic.light();
+    const key = h.dataset.acc;
+    const body = document.getElementById('acc-'+key);
+    const isOpen = body.classList.contains('open');
+    document.querySelectorAll('.accordion-body').forEach(b=>b.classList.remove('open'));
+    if(!isOpen) body.classList.add('open');
+  };
+});
+document.getElementById('row-howto').onclick = ()=>{ Sound.tap(); Haptic.light(); nav('screen-howto'); };
+document.getElementById('row-about').onclick = ()=>{ Sound.tap(); Haptic.light(); nav('screen-about'); };
+document.getElementById('btn-reset-best').onclick = ()=>{
+  Sound.tap(); Haptic.light();
+  showModal('さいこうきろくを けしてもいい？', [
+    {label:'やめる', style:'secondary'},
+    {label:'けす', style:'danger', onClick:()=>{ Store.set('best',0); refreshHomeBest(); showToast('きろくをけしたよ'); }}
+  ]);
+};
+
+document.getElementById('btn-howto-back').onclick = ()=>{ Sound.tap(); Haptic.light(); nav('screen-settings'); };
+document.getElementById('tab-howto-single').onclick = ()=>{
+  Sound.tap(); Haptic.light();
+  document.getElementById('tab-howto-single').classList.add('active');
+  document.getElementById('tab-howto-multi').classList.remove('active');
+  document.getElementById('howto-single-body').style.display='';
+  document.getElementById('howto-multi-body').style.display='none';
+};
+document.getElementById('tab-howto-multi').onclick = ()=>{
+  Sound.tap(); Haptic.light();
+  document.getElementById('tab-howto-multi').classList.add('active');
+  document.getElementById('tab-howto-single').classList.remove('active');
+  document.getElementById('howto-multi-body').style.display='';
+  document.getElementById('howto-single-body').style.display='none';
+};
+
+document.getElementById('btn-about-back').onclick = ()=>{ Sound.tap(); Haptic.light(); nav('screen-settings'); };
+document.getElementById('row-privacy').onclick = ()=>{ Sound.tap(); Haptic.light(); nav('screen-privacy'); };
+document.getElementById('row-terms').onclick = ()=>{ Sound.tap(); Haptic.light(); nav('screen-terms'); };
+document.getElementById('btn-privacy-back').onclick = ()=>{ Sound.tap(); Haptic.light(); nav('screen-about'); };
+document.getElementById('btn-terms-back').onclick = ()=>{ Sound.tap(); Haptic.light(); nav('screen-about'); };
+// iframe load failure fallback (common network-error copy per spec section 30)
+document.getElementById('privacy-iframe').addEventListener('error', ()=>{
+  document.getElementById('privacy-iframe').style.display='none';
+  document.getElementById('privacy-fallback').style.display='flex';
+});
+document.getElementById('terms-iframe').addEventListener('error', ()=>{
+  document.getElementById('terms-iframe').style.display='none';
+  document.getElementById('terms-fallback').style.display='flex';
+});
+document.getElementById('row-review').onclick = ()=>{
+  Sound.tap(); Haptic.light();
+  // Native build: replace with SKStoreReviewController.requestReview() (in-app prompt) — this
+  // web prototype instead opens the App Store review deep link directly, since automatic
+  // review popups aren't available outside a native shell.
+  window.open(APP_STORE_REVIEW_URL, '_blank');
+};
+document.getElementById('row-contact').onclick = ()=>{
+  Sound.tap(); Haptic.light();
+  const supportEmail = 'sekiyubusi@gmail.com';
+  const subject = encodeURIComponent('ハイローラッシュ');
+  const body = encodeURIComponent('\n\n---\nバージョン 1.0.0\n(iOSバージョン・端末情報は自動で付与予定)');
+  const mailto = `mailto:${supportEmail}?subject=${subject}&body=${body}`;
+  try{
+    window.location.href = mailto;
+  }catch(e){ showToast('メールを おくれるように せっていしてね'); }
+};
+document.getElementById('row-share-app').onclick = async ()=>{
+  Sound.tap(); Haptic.light();
+  const text = 'つぎのカードは うえ？ した？ ひとりでも みんなでもあそべるハイローゲームだよ！\n' + APP_STORE_URL;
+  if(navigator.share){ try{ await navigator.share({text}); }catch(e){} }
+  else { showToast('この端末では共有できません（プロトタイプ）'); }
+};
+
+/* =====================================================================
+   INIT
+   ===================================================================== */
+function boot(){
+  paintAllToggles();
+  refreshHomeBest();
+  nav('screen-launch');
+  setTimeout(()=>{ nav('screen-home'); }, 450);
+}
+document.addEventListener('DOMContentLoaded', boot);
+</script>
+</body>
+</html>
