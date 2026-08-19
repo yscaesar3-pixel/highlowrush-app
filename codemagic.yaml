@@ -6,8 +6,6 @@ workflows:
     integrations:
       app_store_connect: oddiro_asc_key
     environment:
-      groups:
-        - ios_signing
       vars:
         XCODE_WORKSPACE: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
