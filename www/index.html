@@ -31,8 +31,6 @@
   --danger:#D9555C;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-top-debug: env(safe-area-inset-top, 0px);
-  --safe-bottom-debug: env(safe-area-inset-bottom, 0px);
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none;}
 html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:var(--ivory);
@@ -49,13 +47,13 @@ html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:v
 .launch-logo-img{width:min(78vw, 420px); height:auto;}
 
 /* ---------- Common top bars ---------- */
-.topbar{display:flex; align-items:center; padding:calc(var(--safe-top) + 10px) 12px 8px 12px; gap:6px; flex-shrink:0;}
+.topbar{display:flex; align-items:center; padding:calc(env(safe-area-inset-top, 0px) + 10px) 12px 8px 12px; gap:6px; flex-shrink:0;}
 .topbar .spacer{flex:1;}
 .nav-btn{display:flex; align-items:center; gap:4px; background:none; border:none; font-size:15px; font-weight:700;
   color:var(--theme-deep); padding:8px 10px; border-radius:12px;}
 .nav-btn:active{background:rgba(124,77,255,.12);}
 .nav-btn.icon-only{font-size:20px; padding:8px;}
-.gear-fab{position:absolute; top:calc(var(--safe-top) + 12px); right:14px; background:rgba(0,0,0,.05);
+.gear-fab{position:absolute; top:calc(env(safe-area-inset-top, 0px) + 12px); right:14px; background:rgba(0,0,0,.05);
   border:none; border-radius:50%; width:42px; height:42px; font-size:20px; z-index:5;}
 
 /* ---------- Home ---------- */
@@ -84,7 +82,7 @@ html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:v
 /* ---------- Ad banner (reserved space placeholder) ---------- */
 .ad-banner{flex-shrink:0; width:100%; height:50px; background:#EDEAE2; border-top:1px solid #DFD9CB;
   display:flex; align-items:center; justify-content:center; font-size:11px; color:#B4AEA0;
-  padding-bottom:0; margin-bottom:var(--safe-bottom);}
+  padding-bottom:0; margin-bottom:env(safe-area-inset-bottom, 0px); margin-top:auto;}
 .ad-banner.hidden{display:none;}
 
 /* ---------- Buttons generic ---------- */
@@ -98,8 +96,8 @@ html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:v
 
 /* ---------- Single Game ---------- */
 #screen-singlegame{position:relative;}
-.sg-header{padding:calc(var(--safe-top) + 8px) 16px 2px; text-align:center; flex-shrink:0; position:relative;}
-.sg-home-btn{position:absolute; left:10px; top:calc(var(--safe-top) + 6px);}
+.sg-header{padding:calc(env(safe-area-inset-top, 0px) + 8px) 16px 2px; text-align:center; flex-shrink:0; position:relative;}
+.sg-home-btn{position:absolute; left:10px; top:calc(env(safe-area-inset-top, 0px) + 6px);}
 .sg-streak{font-size:34px; font-weight:800; color:var(--theme-deep); line-height:1.1;}
 .sg-streak.pop{animation:streakPop .28s ease;}
 @keyframes streakPop{0%{transform:scale(1)}40%{transform:scale(1.22)}100%{transform:scale(1)}}
@@ -155,7 +153,7 @@ html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:v
 .feedback-overlay.draw{color:var(--gray-draw);}
 .feedback-overlay.wrong{color:var(--red-soft);}
 
-.sg-controls{flex-shrink:0; padding:8px 14px calc(10px + var(--safe-bottom)); display:flex; flex-direction:column; gap:6px;}
+.sg-controls{flex-shrink:0; padding:8px 14px calc(10px + env(safe-area-inset-bottom, 0px)); display:flex; flex-direction:column; gap:6px;}
 .prob-row{display:flex; align-items:center; justify-content:center; gap:16px; font-size:12px; font-weight:700; color:var(--ink-sub); min-height:16px;}
 .prob-row.hidden{visibility:hidden; height:0; min-height:0; overflow:hidden;}
 .arrow-row{display:flex; gap:10px;}
@@ -177,7 +175,7 @@ html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:v
 .shuffle-cycle-msg{font-size:24px; font-weight:800; color:var(--gold); text-align:center;}
 
 /* ---------- History screen ---------- */
-.history-header{padding:calc(var(--safe-top)+8px) 16px 6px; display:flex; align-items:center; flex-shrink:0;}
+.history-header{padding:calc(env(safe-area-inset-top, 0px) + 8px) 16px 6px; display:flex; align-items:center; flex-shrink:0;}
 .history-title{flex:1; text-align:center; font-size:17px; font-weight:800; margin-right:40px;}
 .history-remain{text-align:center; font-size:12px; color:var(--ink-sub); font-weight:700; padding-bottom:4px;}
 .history-grid-wrap{flex:1; overflow:auto; padding:4px 10px 10px;}
@@ -195,7 +193,8 @@ html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:v
   text-align:center; font-size:14px; font-weight:800; color:var(--theme-deep);}
 
 /* ---------- Result ---------- */
-#screen-singleresult{align-items:center; justify-content:center; position:relative;}
+#screen-singleresult{position:relative;}
+.result-center{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; min-height:0;}
 .result-record{font-size:15px; font-weight:800; color:var(--gold); margin-bottom:6px; display:none;}
 .result-record.show{display:block;}
 .result-streak{font-size:42px; font-weight:800; color:var(--theme-deep);}
@@ -206,18 +205,18 @@ html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:v
 .result-small-row .small-btn{flex:1;}
 
 /* ---------- Tutorial / HowTo ---------- */
-.tut-wrap{flex:1; overflow:auto; padding:20px 22px calc(20px + var(--safe-bottom));}
+.tut-wrap{flex:1; overflow:auto; padding:20px 22px calc(20px + env(safe-area-inset-bottom, 0px));}
 .tut-title{font-size:20px; font-weight:800; text-align:center; margin-bottom:16px;}
 .tut-line{font-size:15px; line-height:1.7; margin-bottom:12px; background:#fff; border:1px solid #E5E0D3; border-radius:14px; padding:12px 14px;}
 .tut-rank{font-size:14px; text-align:center; letter-spacing:.05em; color:var(--ink-sub); margin-bottom:12px;}
-.tut-cta{padding:14px 22px calc(14px + var(--safe-bottom));}
+.tut-cta{padding:14px 22px calc(14px + env(safe-area-inset-bottom, 0px));}
 #btn-tut-start{width:100%; background:linear-gradient(135deg,var(--theme),var(--theme-deep));}
 .tabs{display:flex; margin:0 16px 6px; background:#F0ECE0; border-radius:14px; padding:4px; flex-shrink:0;}
 .tab-btn{flex:1; padding:9px 6px; text-align:center; font-size:14px; font-weight:800; border-radius:10px; color:var(--ink-sub);}
 .tab-btn.active{background:#fff; color:var(--theme-deep); box-shadow:0 1px 3px rgba(0,0,0,.08);}
 
 /* ---------- Multiplayer preset ---------- */
-.preset-wrap{flex:1; overflow:auto; padding:8px 16px calc(10px + var(--safe-bottom));}
+.preset-wrap{flex:1; overflow:auto; padding:8px 16px calc(10px + env(safe-area-inset-bottom, 0px));}
 .preset-title{text-align:center; font-size:18px; font-weight:800; margin:6px 0 16px;}
 .setting-card{background:#fff; border:1px solid #E5E0D3; border-radius:16px; padding:14px 16px; margin-bottom:12px;}
 .setting-row{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:6px 0;}
@@ -231,7 +230,7 @@ html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:v
 #btn-preset-start{width:100%; margin-top:6px; background:linear-gradient(135deg,var(--up1),var(--up2));}
 
 /* ---------- Multiplayer game ---------- */
-.mp-topnav{display:flex; align-items:center; gap:2px; padding:calc(var(--safe-top)+8px) 8px 4px; flex-shrink:0; flex-wrap:nowrap;}
+.mp-topnav{display:flex; align-items:center; gap:2px; padding:calc(env(safe-area-inset-top, 0px) + 14px) 8px 4px; flex-shrink:0; flex-wrap:nowrap;}
 .mp-topnav .nav-btn{font-size:13px; padding:7px 8px;}
 .mp-main{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:4px 12px;}
 .mp-deck-card-stack{position:relative; width:184px; height:246px; margin:0 auto;}
@@ -245,7 +244,7 @@ html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:v
 .deck-stack.tappable{cursor:pointer;}
 
 /* ---------- Settings ---------- */
-.settings-wrap{flex:1; overflow:auto; padding:6px 16px calc(16px + var(--safe-bottom));}
+.settings-wrap{flex:1; overflow:auto; padding:6px 16px calc(16px + env(safe-area-inset-bottom, 0px));}
 .settings-title{text-align:center; font-size:17px; font-weight:800; margin:4px 0 14px;}
 .cat-card{background:#fff; border-radius:18px; padding:14px 16px; margin-bottom:14px; box-shadow:0 2px 8px rgba(0,0,0,.03);}
 .cat-header{display:flex; align-items:center; gap:8px; font-size:16px; font-weight:800; padding:4px 0 8px;}
@@ -289,7 +288,7 @@ html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:v
 /* ---------- Share preview ---------- */
 .share-canvas-wrap{flex:1; display:flex; align-items:center; justify-content:center; padding:16px;}
 #shareCanvas{width:min(80vw, 320px); height:min(80vw, 320px); border-radius:18px; box-shadow:0 4px 16px rgba(0,0,0,.12);}
-.share-actions{padding:10px 20px calc(16px + var(--safe-bottom)); display:flex; flex-direction:column; gap:10px;}
+.share-actions{padding:10px 20px calc(16px + env(safe-area-inset-bottom, 0px)); display:flex; flex-direction:column; gap:10px;}
 </style>
 </head>
 <body>
@@ -378,15 +377,17 @@ html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:v
 
   <!-- Single Result -->
   <div id="screen-singleresult" class="screen">
-    <div class="result-record" id="sr-record">きろくこうしん！</div>
-    <div class="result-streak" id="sr-streak">0れんしょう！</div>
-    <div class="result-best" id="sr-best">さいこうきろく 0れんしょう</div>
-    <div class="result-actions">
-      <button id="btn-retry" class="big-btn">もういちど</button>
-      <div class="result-small-row">
-        <button class="small-btn" id="btn-sr-share">📤<span>シェア</span></button>
-        <button class="small-btn" id="btn-sr-settings">⚙️<span>せってい</span></button>
-        <button class="small-btn" id="btn-sr-home">🏠<span>ホーム</span></button>
+    <div class="result-center">
+      <div class="result-record" id="sr-record">きろくこうしん！</div>
+      <div class="result-streak" id="sr-streak">0れんしょう！</div>
+      <div class="result-best" id="sr-best">さいこうきろく 0れんしょう</div>
+      <div class="result-actions">
+        <button id="btn-retry" class="big-btn">もういちど</button>
+        <div class="result-small-row">
+          <button class="small-btn" id="btn-sr-share">📤<span>シェア</span></button>
+          <button class="small-btn" id="btn-sr-settings">⚙️<span>せってい</span></button>
+          <button class="small-btn" id="btn-sr-home">🏠<span>ホーム</span></button>
+        </div>
       </div>
     </div>
     <div class="ad-banner" data-ad="singleresult">広告スペース（バナー）</div>
@@ -1460,35 +1461,6 @@ function boot(){
   refreshHomeBest();
   nav('screen-launch');
   setTimeout(()=>{ nav('screen-home'); }, 450);
-  showDebugOverlay();
-}
-
-// TEMPORARY diagnostic overlay to identify the WKWebView sizing issue on device.
-// Safe to delete once the layout bug is confirmed fixed.
-function showDebugOverlay(){
-  const el = document.createElement('div');
-  el.style.cssText = 'position:fixed; left:4px; bottom:4px; z-index:99999; background:rgba(0,0,0,.75); color:#0f0; font-size:10px; font-family:monospace; padding:6px 8px; border-radius:6px; line-height:1.5; pointer-events:none; white-space:pre;';
-  function update(){
-    const app = document.getElementById('app');
-    const appRect = app.getBoundingClientRect();
-    const cs = getComputedStyle(app);
-    const vv = window.visualViewport;
-    el.textContent =
-      'innerW/H: ' + window.innerWidth + '/' + window.innerHeight + '\n' +
-      'docEl clientW/H: ' + document.documentElement.clientWidth + '/' + document.documentElement.clientHeight + '\n' +
-      'body clientW/H: ' + document.body.clientWidth + '/' + document.body.clientHeight + '\n' +
-      '#app rect: ' + Math.round(appRect.width) + '/' + Math.round(appRect.height) + '\n' +
-      '#app computed H: ' + cs.height + '\n' +
-      'visualViewport: ' + (vv ? Math.round(vv.width)+'/'+Math.round(vv.height) : 'n/a') + '\n' +
-      'devicePixelRatio: ' + window.devicePixelRatio + '\n' +
-      'safe-area-top/bottom(px): ' + getComputedStyle(document.documentElement).getPropertyValue('--safe-top-debug') + ' / ' + getComputedStyle(document.documentElement).getPropertyValue('--safe-bottom-debug');
-  }
-  document.body.appendChild(el);
-  update();
-  window.addEventListener('resize', update);
-  if(window.visualViewport) window.visualViewport.addEventListener('resize', update);
-  setTimeout(update, 500);
-  setTimeout(update, 1500);
 }
 document.addEventListener('DOMContentLoaded', boot);
 </script>
