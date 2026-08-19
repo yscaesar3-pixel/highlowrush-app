@@ -33,10 +33,10 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none;}
-html,body{margin:0;padding:0;height:100%;overflow:hidden;background:var(--ivory);
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:var(--ivory);
   font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN",sans-serif;
-  color:var(--ink); position:fixed; inset:0; overscroll-behavior:none;}
-#app{position:fixed; inset:0; overflow:hidden;}
+  color:var(--ink); overscroll-behavior:none;}
+#app{position:fixed; inset:0; width:100%; height:100%; height:100dvh; overflow:hidden;}
 .screen{position:absolute; inset:0; display:none; flex-direction:column; background:var(--ivory);
   animation:fadeIn .18s ease; }
 .screen.active{display:flex;}
