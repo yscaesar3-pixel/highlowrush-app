@@ -38,8 +38,8 @@
 html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:var(--ivory);
   font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN",sans-serif;
   color:var(--ink); overscroll-behavior:none;}
-#app{position:fixed; inset:0; width:100%; height:100%; height:100dvh; overflow:hidden;}
-.screen{position:absolute; inset:0; display:none; flex-direction:column; background:var(--ivory);
+#app{position:fixed; top:0; left:0; right:0; bottom:0; width:100%; height:100%; height:100dvh; overflow:hidden;}
+.screen{position:absolute; top:0; left:0; right:0; bottom:0; width:100%; height:100%; display:none; flex-direction:column; background:var(--ivory);
   animation:fadeIn .18s ease; }
 .screen.active{display:flex;}
 @keyframes fadeIn{from{opacity:0} to{opacity:1}}
@@ -59,7 +59,7 @@ html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:v
   border:none; border-radius:50%; width:42px; height:42px; font-size:20px; z-index:5;}
 
 /* ---------- Home ---------- */
-#screen-home{align-items:stretch; justify-content:center; position:relative;}
+#screen-home{position:relative;}
 .home-bg-pattern{position:absolute; inset:0; pointer-events:none; opacity:.5;
   background-image:
     radial-gradient(circle at 12% 18%, rgba(124,77,255,.06) 0 40px, transparent 41px),
