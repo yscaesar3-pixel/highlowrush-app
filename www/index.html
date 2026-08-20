@@ -662,9 +662,16 @@ const Sound = {
   shuffle(){ for(let i=0;i<5;i++) setTimeout(()=>beep(300+Math.random()*400,.05,'square',.05), i*60); },
 };
 const Haptic = {
-  light(){ if(Store.get('vibration') && navigator.vibrate) navigator.vibrate(10); },
-  medium(){ if(Store.get('vibration') && navigator.vibrate) navigator.vibrate(18); },
-  strong(){ if(Store.get('vibration') && navigator.vibrate) navigator.vibrate([0,30,30,30]); },
+  plugin: (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())
+    ? (window.Capacitor.Plugins && window.Capacitor.Plugins.Haptics) : null,
+  fire(nativeCall, webFallbackMs){
+    if(!Store.get('vibration')) return;
+    if(this.plugin){ try{ nativeCall(this.plugin); }catch(e){} }
+    else if(navigator.vibrate){ navigator.vibrate(webFallbackMs); } // browser/prototype preview only; iOS WKWebView doesn't support this API
+  },
+  light(){ this.fire(p=>p.impact({ style: 'LIGHT' }), 10); },
+  medium(){ this.fire(p=>p.impact({ style: 'MEDIUM' }), 18); },
+  strong(){ this.fire(p=>p.impact({ style: 'HEAVY' }), [0,30,30,30]); },
 };
 
 /* ---------------- Card model ---------------- */
