@@ -748,7 +748,8 @@ function nav(id){
 /* ---------------- AdMob (native only; no-op in a plain browser/prototype preview) ----------------
    Spec: no personalized ads, no IDFA tracking, no ATT prompt (see PLACEHOLDERS_TO_FILL_BEFORE_RELEASE
    in README for the real AdMob App ID / banner ad unit ID to swap in before release). */
-const ADMOB_BANNER_ID_IOS = 'ca-app-pub-3940256099942544/2934735716'; // TODO: replace with the real HighLowRush iOS banner ad unit ID from AdMob console. This is Google's official iOS test banner unit ID.
+const ADMOB_BANNER_ID_IOS = 'ca-app-pub-8174756915786797/4454826263'; // HighLowRush production iOS banner ad unit ID
+const ADMOB_TESTING = true; // TODO: set to false before public release. While true, forces Google test creatives even on the real ad unit ID above, so development/TestFlight testing doesn't accidentally generate real (invalid) ad traffic.
 const Ads = {
   plugin: null,
   bannerVisible: false,
@@ -780,6 +781,7 @@ const Ads = {
             position: 'BOTTOM_CENTER',
             margin: 0,
             npa: true, // spec: no personalized ads / no IDFA tracking / no ATT prompt
+            isTesting: ADMOB_TESTING,
           });
           this.bannerVisible = true;
         } else {
