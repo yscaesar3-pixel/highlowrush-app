@@ -674,6 +674,60 @@ const Haptic = {
   strong(){ this.fire(p=>p.impact({ style: 'HEAVY' }), [0,30,30,30]); },
 };
 
+/* ---------------- Share (native @capacitor/share; navigator.share fallback for web preview) ----------------
+   Web Share API support inside WKWebView is unconfirmed/unreliable, so native is used whenever available. */
+const ShareUtil = {
+  cap: window.Capacitor,
+  isNative(){ return !!(this.cap && this.cap.isNativePlatform && this.cap.isNativePlatform()); },
+  async shareTextOnly(text){
+    if(this.isNative()){
+      const Share = this.cap.Plugins && this.cap.Plugins.Share;
+      if(!Share) { showToast('共有機能を利用できません'); return; }
+      try{ await Share.share({ text }); }
+      catch(e){ if(!(e && (e.message||'').toLowerCase().includes('cancel'))) { console.warn('share failed', e); showToast('共有に失敗しました'); } }
+      return;
+    }
+    if(navigator.share){ try{ await navigator.share({ text }); }catch(e){} }
+    else { showToast('この端末では共有できません（プロトタイプ）'); }
+  },
+  async shareCanvasImage(canvas, text){
+    if(this.isNative()){
+      const Share = this.cap.Plugins && this.cap.Plugins.Share;
+      const Filesystem = this.cap.Plugins && this.cap.Plugins.Filesystem;
+      if(!Share || !Filesystem){ showToast('共有機能を利用できません'); return; }
+      try{
+        const dataUrl = canvas.toDataURL('image/png');
+        const base64 = dataUrl.split(',')[1];
+        const fileName = 'highlowrush-share-' + Date.now() + '.png';
+        const writeResult = await Filesystem.writeFile({ path: fileName, data: base64, directory: 'CACHE' });
+        await Share.share({ text, files: [writeResult.uri] });
+      }catch(e){
+        if(e && (e.message||'').toLowerCase().includes('cancel')) return; // user cancelled the share sheet
+        console.warn('share failed', e);
+        showToast('共有に失敗しました: ' + (e && e.message ? e.message : e));
+      }
+      return;
+    }
+    // web preview fallback
+    canvas.toBlob(async (blob)=>{
+      if(!blob){ showToast('画像の書き出しに失敗しました'); return; }
+      try{
+        const file = new File([blob],'highlowrush.png',{type:'image/png'});
+        if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+          await navigator.share({files:[file], text});
+        } else if(navigator.share){
+          await navigator.share({text});
+        } else {
+          showToast('この端末では共有できません（プロトタイプ）');
+        }
+      }catch(e){
+        if(e && e.name === 'AbortError') return;
+        showToast('共有に失敗しました: ' + (e && e.message ? e.message : e));
+      }
+    }, 'image/png');
+  },
+};
+
 /* ---------------- Card model ---------------- */
 const RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 const SUITS = ['♦','♥','♠','♣']; // fixed column order per spec
@@ -1168,17 +1222,7 @@ document.getElementById('btn-share-send').onclick = ()=>{
   Sound.tap(); Haptic.light();
   const canvas = document.getElementById('shareCanvas');
   const text = 'つぎのカードは うえ？ した？ ひとりでも みんなでもあそべるハイローゲームだよ！\n' + APP_STORE_URL;
-  canvas.toBlob(async (blob)=>{
-    try{
-      if(navigator.share && navigator.canShare && navigator.canShare({files:[new File([blob],'highlowrush.png',{type:'image/png'})]})){
-        await navigator.share({files:[new File([blob],'highlowrush.png',{type:'image/png'})], text});
-      } else if(navigator.share){
-        await navigator.share({text});
-      } else {
-        showToast('この端末では共有できません（プロトタイプ）');
-      }
-    }catch(e){ /* user cancelled */ }
-  });
+  ShareUtil.shareCanvasImage(canvas, text);
 };
 
 /* =====================================================================
@@ -1501,11 +1545,10 @@ document.getElementById('row-contact').onclick = ()=>{
     window.location.href = mailto;
   }catch(e){ showToast('メールを おくれるように せっていしてね'); }
 };
-document.getElementById('row-share-app').onclick = async ()=>{
+document.getElementById('row-share-app').onclick = ()=>{
   Sound.tap(); Haptic.light();
   const text = 'つぎのカードは うえ？ した？ ひとりでも みんなでもあそべるハイローゲームだよ！\n' + APP_STORE_URL;
-  if(navigator.share){ try{ await navigator.share({text}); }catch(e){} }
-  else { showToast('この端末では共有できません（プロトタイプ）'); }
+  ShareUtil.shareTextOnly(text);
 };
 
 /* =====================================================================
