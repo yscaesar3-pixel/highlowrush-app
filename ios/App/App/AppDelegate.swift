@@ -9,7 +9,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-        GADMobileAds.sharedInstance().start(completionHandler: nil)
+        // Google Mobile Ads SDK 13.x: the Swift API is now `MobileAds.shared.start()`,
+        // an async function with no completionHandler parameter (Obj-C keeps the old signature).
+        Task {
+            await MobileAds.shared.start()
+        }
         return true
     }
 
