@@ -58,13 +58,8 @@ html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:v
 
 /* ---------- Home ---------- */
 #screen-home{position:relative;}
-.home-bg-pattern{position:absolute; inset:0; pointer-events:none; opacity:.5;
-  background-image:
-    radial-gradient(circle at 12% 18%, rgba(124,77,255,.06) 0 40px, transparent 41px),
-    radial-gradient(circle at 85% 12%, rgba(255,107,157,.06) 0 34px, transparent 35px),
-    radial-gradient(circle at 20% 82%, rgba(47,128,237,.06) 0 46px, transparent 47px),
-    radial-gradient(circle at 90% 78%, rgba(227,178,60,.05) 0 30px, transparent 31px);
-}
+.home-bg-pattern{position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none;
+  background-image:url('assets/home-bg.jpg'); background-size:cover; background-position:center;}
 .home-content{position:relative; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:0 24px;}
 .home-logo-img{width:min(80vw, 360px); height:auto; margin-bottom:2px;}
 .home-catch{font-size:15px; color:var(--ink); margin-bottom:26px; text-align:center;}
@@ -84,6 +79,8 @@ html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:v
   display:flex; align-items:center; justify-content:center; font-size:11px; color:#B4AEA0;
   padding-bottom:0; margin-bottom:env(safe-area-inset-bottom, 0px); margin-top:auto;}
 .ad-banner.hidden{display:none;}
+/* Once a real native AdMob banner is showing on top, hide the placeholder box/text but keep the reserved space. */
+body.native-ads-active .ad-banner{background:transparent; border-top:none; color:transparent;}
 
 /* ---------- Buttons generic ---------- */
 .big-btn{font-size:17px; font-weight:800; padding:16px; border-radius:18px; border:none; color:#fff;
@@ -745,7 +742,56 @@ let settingsReturnTo = 'screen-home';
 function nav(id){
   Object.values(screens).forEach(s=>s.classList.remove('active'));
   screens[id].classList.add('active');
+  Ads.syncBannerForScreen(id);
 }
+
+/* ---------------- AdMob (native only; no-op in a plain browser/prototype preview) ----------------
+   Spec: no personalized ads, no IDFA tracking, no ATT prompt (see PLACEHOLDERS_TO_FILL_BEFORE_RELEASE
+   in README for the real AdMob App ID / banner ad unit ID to swap in before release). */
+const ADMOB_BANNER_ID_IOS = 'ca-app-pub-3940256099942544/2934735716'; // TODO: replace with the real HighLowRush iOS banner ad unit ID from AdMob console. This is Google's official iOS test banner unit ID.
+const Ads = {
+  plugin: null,
+  bannerVisible: false,
+  ready: null,
+  init(){
+    this.ready = (async () => {
+      const cap = window.Capacitor;
+      if(!cap || !cap.isNativePlatform || !cap.isNativePlatform()) return; // web/prototype preview: skip entirely
+      this.plugin = cap.Plugins && cap.Plugins.AdMob;
+      if(!this.plugin) return;
+      try{
+        await this.plugin.initialize({ initializeForTesting: false });
+        document.body.classList.add('native-ads-active');
+      }catch(e){ console.warn('AdMob init failed', e); }
+    })();
+    return this.ready;
+  },
+  async syncBannerForScreen(screenId){
+    if(this.ready) await this.ready;
+    if(!this.plugin) return;
+    const screenEl = screens[screenId];
+    const hasBanner = !!screenEl.querySelector('.ad-banner');
+    try{
+      if(hasBanner){
+        if(!this.bannerVisible){
+          await this.plugin.showBanner({
+            adId: ADMOB_BANNER_ID_IOS,
+            adSize: 'ADAPTIVE_BANNER',
+            position: 'BOTTOM_CENTER',
+            margin: 0,
+            npa: true, // spec: no personalized ads / no IDFA tracking / no ATT prompt
+          });
+          this.bannerVisible = true;
+        } else {
+          await this.plugin.resumeBanner();
+        }
+      } else if(this.bannerVisible){
+        await this.plugin.hideBanner();
+      }
+    }catch(e){ console.warn('AdMob banner error', e); }
+  },
+};
+Ads.init();
 
 /* ---------------- Modal ---------------- */
 function showModal(msg, buttons){
